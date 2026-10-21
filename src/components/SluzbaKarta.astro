@@ -1,0 +1,44 @@
+---
+import { Image } from 'astro:assets';
+import type { CollectionEntry } from 'astro:content';
+import T from './T.astro';
+import { zobrazitPlaceholdery } from '../config/placeholdery';
+import { cesta, t, jazykZUrl } from '../i18n';
+
+interface Props {
+  sluzba: CollectionEntry<'sluzby'>;
+  index?: number;
+}
+const { sluzba, index = 0 } = Astro.props;
+const jazyk = jazykZUrl(Astro.url);
+const s = t(jazyk);
+const d = sluzba.data;
+---
+
+<article class="sluzba" data-reveal style={`--reveal-delay:${(index % 4) * 90}ms`}>
+  <a href={cesta(`/sluzby/${sluzba.id}`, jazyk)} class="sluzba__odkaz">
+    {d.obrazek ? (
+      <div class="sluzba__foto foto-zoom">
+        <Image src={d.obrazek} alt="" widths={[480, 720, 960]} sizes="(min-width: 64em) 25vw, (min-width: 40em) 50vw, 100vw" width={960} height={1200} fit="cover" layout="none" />
+      </div>
+    ) : zobrazitPlaceholdery && (
+      <div class="sluzba__foto">
+        <div class="doplnit-blok"><mark class="doplnit">[DOPLNIT: fotografie ke službě {d.nazev}]</mark></div>
+      </div>
+    )}
+    <span class="sluzba__cislo" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+    <h3 class="sluzba__nazev">{d.nazev}</h3>
+    <T as="p" class="sluzba__perex" text={d.perex} />
+    <span class="odkaz-sipka">{s.obecne.vice} <span class="visually-hidden">– {d.nazev}</span><span class="sipka" aria-hidden="true">→</span></span>
+  </a>
+</article>
+
+<style>
+  .sluzba__odkaz { display: grid; gap: var(--space-3); text-decoration: none; height: 100%; align-content: start; }
+  .sluzba__foto { aspect-ratio: 4 / 5; background: var(--c-mist); margin-bottom: var(--space-3); }
+  .sluzba__foto :global(img), .sluzba__foto .doplnit-blok { width: 100%; height: 100%; object-fit: cover; }
+  .sluzba__cislo { font-size: var(--fs-xs); color: var(--c-muted); letter-spacing: 0.08em; }
+  .sluzba__nazev { font-size: var(--fs-xl); }
+  .sluzba__perex { color: var(--c-muted); font-size: var(--fs-sm); display: -webkit-box; -webkit-line-clamp: 5; -webkit-box-orient: vertical; overflow: hidden; }
+  .sluzba__odkaz .odkaz-sipka { justify-self: start; margin-top: var(--space-2); }
+</style>

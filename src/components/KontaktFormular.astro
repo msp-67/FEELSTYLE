@@ -1,0 +1,195 @@
+---
+/**
+ * Kontaktní formulář. Funguje i bez JS (klasický POST → /api/kontakt → /kontakt/odeslano).
+ * S JS se odešle na pozadí a zobrazí výsledek bez přenačtení stránky.
+ */
+import { PUBLIC_TURNSTILE_SITE_KEY } from 'astro:env/client';
+import { LIMITY, TYPY_PROJEKTU } from '../lib/formular';
+import { cesta, t, jazykZUrl } from '../i18n';
+
+const jazyk = jazykZUrl(Astro.url);
+const s = t(jazyk).formular;
+const turnstile = PUBLIC_TURNSTILE_SITE_KEY;
+---
+
+<form class="formular" action="/api/kontakt" method="post" novalidate data-formular id="formular">
+  <div class="formular__mrizka">
+    <div class="pole">
+      <label for="f-jmeno">{s.jmeno} <span class="pole__povinne" aria-hidden="true">*</span></label>
+      <input id="f-jmeno" name="jmeno" type="text" autocomplete="name" required maxlength={LIMITY.jmeno} aria-describedby="f-jmeno-chyba" />
+      <p class="pole__chyba" id="f-jmeno-chyba" data-chyba="jmeno"></p>
+    </div>
+    <div class="pole">
+      <label for="f-email">{s.email} <span class="pole__povinne" aria-hidden="true">*</span></label>
+      <input id="f-email" name="email" type="email" autocomplete="email" required maxlength={LIMITY.email} aria-describedby="f-email-chyba" />
+      <p class="pole__chyba" id="f-email-chyba" data-chyba="email"></p>
+    </div>
+    <div class="pole">
+      <label for="f-telefon">{s.telefon}</label>
+      <input id="f-telefon" name="telefon" type="tel" autocomplete="tel" maxlength={LIMITY.telefon} aria-describedby="f-telefon-chyba" />
+      <p class="pole__chyba" id="f-telefon-chyba" data-chyba="telefon"></p>
+    </div>
+    <div class="pole">
+      <label for="f-typ">{s.typ}</label>
+      <select id="f-typ" name="typ">
+        <option value="">{s.typVyberte}</option>
+        {TYPY_PROJEKTU.map((o) => <option value={o.k}>{o.nazev}</option>)}
+      </select>
+    </div>
+    <div class="pole pole--cela">
+      <label for="f-zprava">{s.zprava} <span class="pole__povinne" aria-hidden="true">*</span></label>
+      <textarea id="f-zprava" name="zprava" rows="6" required maxlength={LIMITY.zprava} aria-describedby="f-zprava-chyba"></textarea>
+      <p class="pole__chyba" id="f-zprava-chyba" data-chyba="zprava"></p>
+    </div>
+
+    <!-- Honeypot: skryté pole pro roboty -->
+    <div class="formular__past" aria-hidden="true">
+      <label for="f-web">Web</label>
+      <input id="f-web" name="web" type="text" tabindex="-1" autocomplete="off" />
+    </div>
+    <input type="hidden" name="t" value="" data-cas />
+
+    <div class="pole pole--cela pole--souhlas">
+      <input id="f-souhlas" name="souhlas" type="checkbox" required aria-describedby="f-souhlas-chyba" />
+      <label for="f-souhlas">
+        {s.souhlas} <a href={cesta('/ochrana-osobnich-udaju', jazyk)}>{s.souhlasOdkaz}</a>.
+        <span class="pole__povinne" aria-hidden="true">*</span>
+      </label>
+      <p class="pole__chyba" id="f-souhlas-chyba" data-chyba="souhlas"></p>
+    </div>
+
+    {turnstile && <div class="cf-turnstile pole--cela" data-sitekey={turnstile} data-language="cs"></div>}
+  </div>
+
+  <div class="formular__pata">
+    <button type="submit" class="btn" data-odeslat>
+      <span data-text>{s.odeslat}</span>
+      <span data-text-odesilam hidden>{s.odesilam}</span>
+      <span class="sipka" aria-hidden="true">→</span>
+    </button>
+    <p class="formular__poznamka"><span aria-hidden="true">*</span> {s.povinne}</p>
+  </div>
+
+  <div class="formular__stav" role="status" aria-live="polite" data-stav></div>
+</form>
+
+{turnstile && <script is:inline src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>}
+
+<style>
+  .formular__mrizka { display: grid; gap: var(--space-5) var(--space-5); }
+  @media (min-width: 40em) {
+    .formular__mrizka { grid-template-columns: 1fr 1fr; }
+    .pole--cela { grid-column: 1 / -1; }
+  }
+  .pole { display: grid; gap: var(--space-2); align-content: start; }
+  label { font-size: var(--fs-sm); font-weight: var(--fw-medium); }
+  .pole__povinne { color: var(--c-muted); }
+  input:not([type='checkbox']), select, textarea {
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.75rem 0.9rem;
+    border: 1px solid #8a8a8a;
+    border-radius: var(--radius);
+    background: var(--c-paper);
+    font-size: 1rem;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+  }
+  textarea { resize: vertical; min-height: 9rem; }
+  input:hover, select:hover, textarea:hover { border-color: var(--c-ink); }
+  input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: none;
+    border-color: var(--c-ink);
+    box-shadow: 0 0 0 1px var(--c-ink);
+  }
+  [aria-invalid='true'] { border-color: var(--c-error) !important; }
+  .pole__chyba { min-height: 0; font-size: var(--fs-xs); color: var(--c-error); }
+  .pole__chyba:empty { display: none; }
+
+  .pole--souhlas { grid-template-columns: auto 1fr; align-items: start; column-gap: var(--space-3); }
+  .pole--souhlas input { width: 1.25rem; height: 1.25rem; margin-top: 0.2rem; accent-color: var(--c-ink); }
+  .pole--souhlas label { font-weight: var(--fw-regular); color: var(--c-ink-soft); }
+  .pole--souhlas .pole__chyba { grid-column: 2; }
+
+  .formular__past { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+
+  .formular__pata { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-5); margin-top: var(--space-6); }
+  .formular__poznamka { font-size: var(--fs-xs); color: var(--c-muted); }
+  .formular__stav:not(:empty) { margin-top: var(--space-5); padding: var(--space-4) var(--space-5); border-left: 2px solid currentColor; }
+  .formular__stav[data-typ='ok'] { color: var(--c-success); }
+  .formular__stav[data-typ='chyba'] { color: var(--c-error); }
+  [data-odeslat][aria-busy='true'] { opacity: 0.7; pointer-events: none; }
+</style>
+
+<script>
+  import { cs } from '../i18n/cs';
+  const s = cs.formular;
+
+  for (const form of document.querySelectorAll<HTMLFormElement>('[data-formular]')) {
+    const cas = form.querySelector<HTMLInputElement>('[data-cas]');
+    if (cas) cas.value = String(Date.now());
+    const stav = form.querySelector<HTMLElement>('[data-stav]')!;
+    const tlacitko = form.querySelector<HTMLButtonElement>('[data-odeslat]')!;
+
+    const nastavChyby = (chyby: Record<string, string>) => {
+      form.querySelectorAll<HTMLElement>('[data-chyba]').forEach((el) => {
+        const pole = el.dataset.chyba!;
+        const input = form.elements.namedItem(pole) as HTMLInputElement | null;
+        el.textContent = chyby[pole] ?? '';
+        input?.setAttribute('aria-invalid', String(Boolean(chyby[pole])));
+      });
+      const prvni = Object.keys(chyby)[0];
+      if (prvni) (form.elements.namedItem(prvni) as HTMLElement | null)?.focus();
+    };
+
+    const lokalniValidace = () => {
+      const chyby: Record<string, string> = {};
+      const f = form.elements as unknown as Record<string, HTMLInputElement>;
+      if (!f.jmeno.value.trim()) chyby.jmeno = 'Vyplňte jméno.';
+      if (!f.email.validity.valid || !f.email.value.trim()) chyby.email = 'Zadejte platný e-mail.';
+      if (!f.zprava.value.trim()) chyby.zprava = 'Napište nám zprávu.';
+      if (!f.souhlas.checked) chyby.souhlas = 'Bez souhlasu nemůžeme poptávku zpracovat.';
+      return chyby;
+    };
+
+    const zprava = (typ: 'ok' | 'chyba', text: string) => {
+      stav.dataset.typ = typ;
+      stav.textContent = text;
+    };
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const chyby = lokalniValidace();
+      nastavChyby(chyby);
+      if (Object.keys(chyby).length) {
+        zprava('chyba', s.chybaPole);
+        return;
+      }
+      tlacitko.setAttribute('aria-busy', 'true');
+      tlacitko.querySelector('[data-text]')!.toggleAttribute('hidden', true);
+      tlacitko.querySelector('[data-text-odesilam]')!.toggleAttribute('hidden', false);
+      stav.textContent = '';
+      try {
+        const r = await fetch(form.action, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+        const data = await r.json().catch(() => ({}));
+        if (r.ok && data.ok) {
+          form.reset();
+          zprava('ok', s.uspech);
+        } else if (data.chyby) {
+          nastavChyby(data.chyby);
+          zprava('chyba', s.chybaPole);
+        } else {
+          zprava('chyba', s.chyba);
+        }
+      } catch {
+        zprava('chyba', s.chyba);
+      } finally {
+        tlacitko.removeAttribute('aria-busy');
+        tlacitko.querySelector('[data-text]')!.toggleAttribute('hidden', false);
+        tlacitko.querySelector('[data-text-odesilam]')!.toggleAttribute('hidden', true);
+        if (cas) cas.value = String(Date.now() - 10000);
+        // @ts-ignore – Turnstile widget po odeslání resetujeme
+        window.turnstile?.reset?.();
+      }
+    });
+  }
+</script>

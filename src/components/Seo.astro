@@ -1,0 +1,51 @@
+---
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+import { web } from '../config/web';
+import { t, type Jazyk } from '../i18n';
+
+interface Props {
+  titulek: string;
+  popis: string;
+  obrazek?: ImageMetadata;
+  obrazekAlt?: string;
+  /** Titulek bez „ | Feel Style“ (úvodní stránka). */
+  bezSuffixu?: boolean;
+  noindex?: boolean;
+  typ?: 'website' | 'article';
+  jazyk: Jazyk;
+}
+
+const { titulek, popis, obrazek, obrazekAlt, bezSuffixu = false, noindex = false, typ = 'website', jazyk } = Astro.props;
+const s = t(jazyk);
+const site = Astro.site ?? new URL(web.url);
+const plnyTitulek = bezSuffixu ? titulek : `${titulek}${web.titulekSuffix}`;
+const kanonicka = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/(.)\/$/, '$1'), site).href;
+
+// OG obrázek 1200×630 vygenerovaný z fotky stránky (nebo výchozí fotky webu).
+const og = await getImage({ src: obrazek ?? web.ogObrazek, width: 1200, height: 630, fit: 'cover', format: 'jpg', quality: 80 });
+const ogUrl = new URL(og.src, site).href;
+---
+
+<title>{plnyTitulek}</title>
+<meta name="description" content={popis} />
+<link rel="canonical" href={kanonicka} />
+{noindex && <meta name="robots" content="noindex, follow" />}
+{!noindex && <meta name="robots" content="index, follow, max-image-preview:large" />}
+<link rel="alternate" hreflang={s.meta.lang} href={kanonicka} />
+<link rel="alternate" hreflang="x-default" href={kanonicka} />
+
+<meta property="og:type" content={typ} />
+<meta property="og:site_name" content={web.nazev} />
+<meta property="og:locale" content={s.meta.locale} />
+<meta property="og:title" content={plnyTitulek} />
+<meta property="og:description" content={popis} />
+<meta property="og:url" content={kanonicka} />
+<meta property="og:image" content={ogUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+{obrazekAlt && <meta property="og:image:alt" content={obrazekAlt} />}
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={plnyTitulek} />
+<meta name="twitter:description" content={popis} />
+<meta name="twitter:image" content={ogUrl} />

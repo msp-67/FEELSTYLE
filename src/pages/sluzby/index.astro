@@ -1,0 +1,25 @@
+---
+import { getEntry } from 'astro:content';
+import Zaklad from '../../layouts/Zaklad.astro';
+import ZahlaviStranky from '../../components/ZahlaviStranky.astro';
+import SluzbaKarta from '../../components/SluzbaKarta.astro';
+import Vyzva from '../../components/Vyzva.astro';
+import { sloupceSluzeb, viditelneSluzby } from '../../lib/sluzby';
+
+const stranka = (await getEntry('stranky', 'sluzby'))!;
+const sluzby = await viditelneSluzby();
+---
+
+<Zaklad titulek={stranka.data.seoTitulek ?? stranka.data.titulek} popis={stranka.data.seoPopis} obrazek={sluzby.find((x) => x.data.obrazek)?.data.obrazek}>
+  <ZahlaviStranky nadpis={stranka.data.titulek} stitek="Co děláme" perex={stranka.data.perex} />
+  <section class="container section section--tight-top" aria-label="Přehled služeb">
+    <div class="mrizka-sluzeb mrizka" style={sloupceSluzeb(sluzby.length)}>
+      {sluzby.map((x, i) => <SluzbaKarta sluzba={x} index={i} />)}
+    </div>
+  </section>
+  <Vyzva />
+</Zaklad>
+
+<style>
+  .mrizka { gap: var(--space-8) var(--space-5); }
+</style>

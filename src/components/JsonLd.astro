@@ -1,0 +1,68 @@
+---
+/**
+ * Strukturovaná data pro Google: Organization + LocalBusiness (GeneralContractor) + WebSite.
+ * Vše se bere z src/config/firma.ts; položky s [DOPLNIT] se vynechají.
+ * Volitelně lze přidat další uzly (BreadcrumbList, JobPosting…) přes prop `dalsi`.
+ */
+import { getImage } from 'astro:assets';
+import { firma } from '../config/firma';
+import { web } from '../config/web';
+import { bezDoplnit } from '../lib/text';
+
+interface Props {
+  dalsi?: Record<string, unknown>[];
+}
+const { dalsi = [] } = Astro.props;
+
+const site = (Astro.site ?? new URL(web.url)).href.replace(/\/$/, '');
+const orgId = `${site}/#organizace`;
+const obrazek = await getImage({ src: web.ogObrazek, width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const a = firma.adresy[firma.hlavniAdresa];
+const psc = bezDoplnit(a.psc);
+
+const graph = [
+  {
+    '@type': 'Organization',
+    '@id': orgId,
+    name: firma.nazev,
+    alternateName: firma.znacka,
+    url: site,
+    taxID: firma.dic.replaceAll(' ', ''),
+    identifier: { '@type': 'PropertyValue', propertyID: 'IČO', value: firma.ico.replaceAll(' ', '') },
+    email: firma.emaily.kontakt[0],
+    ...(bezDoplnit(firma.telefon) && { telephone: firma.telefon }),
+    ...(firma.socialniSite.length && { sameAs: firma.socialniSite.map((s) => s.url) }),
+  },
+  {
+    '@type': ['LocalBusiness', 'GeneralContractor'],
+    '@id': `${site}/#firma`,
+    name: firma.nazev,
+    url: site,
+    image: new URL(obrazek.src, site + '/').href,
+    parentOrganization: { '@id': orgId },
+    email: firma.emaily.kontakt[0],
+    ...(bezDoplnit(firma.telefon) && { telephone: firma.telefon }),
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: a.ulice,
+      addressLocality: a.mesto,
+      ...(psc && { postalCode: psc.replaceAll(' ', '') }),
+      addressCountry: a.zeme,
+    },
+    areaServed: firma.zeme.map((z) => ({ '@type': 'Country', name: z })),
+  },
+  {
+    '@type': 'WebSite',
+    '@id': `${site}/#web`,
+    url: site,
+    name: web.nazev,
+    inLanguage: 'cs-CZ',
+    publisher: { '@id': orgId },
+  },
+  ...dalsi,
+];
+
+const json = JSON.stringify({ '@context': 'https://schema.org', '@graph': graph }).replaceAll('<', '\\u003c');
+---
+
+<script type="application/ld+json" set:html={json} />

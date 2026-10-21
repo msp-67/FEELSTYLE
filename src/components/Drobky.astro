@@ -1,0 +1,31 @@
+---
+import { t, jazykZUrl } from '../i18n';
+
+export interface Drobek {
+  nazev: string;
+  url?: string;
+}
+interface Props {
+  polozky: Drobek[];
+}
+const { polozky } = Astro.props;
+const s = t(jazykZUrl(Astro.url));
+---
+
+<nav aria-label={s.obecne.drobeckovaNavigace} class="drobky">
+  <ol role="list">
+    {polozky.map((p, i) => (
+      <li>
+        {p.url && i < polozky.length - 1 ? <a href={p.url}>{p.nazev}</a> : <span aria-current="page">{p.nazev}</span>}
+      </li>
+    ))}
+  </ol>
+</nav>
+
+<style>
+  .drobky { margin-bottom: var(--space-5); font-size: var(--fs-xs); color: var(--c-muted); letter-spacing: 0.03em; }
+  .drobky ol { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .drobky li + li::before { content: '/'; margin-right: var(--space-2); }
+  .drobky a { text-decoration: none; }
+  .drobky a:hover { text-decoration: underline; }
+</style>

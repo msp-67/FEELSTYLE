@@ -1,0 +1,47 @@
+---
+/** Tabulka parametrů projektu. Nevyplněná volitelná pole se nezobrazí. */
+import type { Projekt } from '../lib/projekty';
+import { t, jazykZUrl } from '../i18n';
+
+interface Props {
+  projekt: Projekt;
+}
+const d = Astro.props.projekt.data;
+const s = t(jazykZUrl(Astro.url));
+const p = s.parametry;
+
+const vsechny: { k: string; v: string | undefined }[] = [
+  { k: p.typ, v: s.typy[d.typ] },
+  { k: p.lokalita, v: d.lokalita },
+  { k: p.zeme, v: s.zeme[d.zeme] },
+  { k: p.klient, v: d.klient },
+  { k: p.architekt, v: d.architekt },
+  { k: p.rok, v: d.rok?.toString() },
+  { k: p.rozsah, v: d.rozsah },
+  { k: p.stav, v: d.stav && s.stav[d.stav] },
+];
+const radky = vsechny.filter((r): r is { k: string; v: string } => Boolean(r.v));
+---
+
+<dl class="parametry" aria-label={s.projekty.parametry}>
+  {radky.map((r) => (
+    <div class="parametry__radek">
+      <dt>{r.k}</dt>
+      <dd>{r.v}</dd>
+    </div>
+  ))}
+</dl>
+
+<style>
+  .parametry { border-top: 1px solid var(--c-ink); }
+  .parametry__radek {
+    display: grid;
+    grid-template-columns: minmax(7rem, 1fr) 2fr;
+    gap: var(--space-4);
+    padding-block: var(--space-4);
+    border-bottom: 1px solid var(--c-line);
+    font-size: var(--fs-sm);
+  }
+  dt { color: var(--c-muted); }
+  dd { font-weight: var(--fw-medium); }
+</style>

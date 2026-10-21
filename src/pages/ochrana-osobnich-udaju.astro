@@ -1,0 +1,27 @@
+---
+import PravniStranka from '../components/PravniStranka.astro';
+import T from '../components/T.astro';
+import { firma } from '../config/firma';
+import { maObsah } from '../lib/text';
+
+const a = firma.adresy[firma.hlavniAdresa];
+---
+
+<PravniStranka id="ochrana-osobnich-udaju">
+  <div class="spravce prose">
+    <h2>Správce osobních údajů</h2>
+    <p>
+      {firma.nazev}, IČO {firma.ico}, DIČ {firma.dic}<br />
+      se sídlem {a.ulice}, <T text={`${a.psc} ${a.mesto}`} />
+      {maObsah(firma.zapis) && <><br /><T text={firma.zapis} /></>}
+    </p>
+    <p>
+      Kontakt pro záležitosti ochrany osobních údajů:
+      {firma.emaily.kontakt.map((e, i) => <>{i > 0 && ', '}<a href={`mailto:${e}`}>{e}</a></>)}
+    </p>
+  </div>
+</PravniStranka>
+
+<style>
+  .spravce { margin-bottom: var(--space-7); }
+</style>

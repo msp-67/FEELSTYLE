@@ -1,0 +1,28 @@
+---
+/** Společná šablona textových stránek (ochrana osobních údajů, cookies). */
+import { getEntry, render } from 'astro:content';
+import Zaklad from '../layouts/Zaklad.astro';
+import ZahlaviStranky from './ZahlaviStranky.astro';
+
+interface Props {
+  id: 'ochrana-osobnich-udaju' | 'cookies';
+}
+const stranka = (await getEntry('stranky', Astro.props.id))!;
+const d = stranka.data;
+const { Content } = await render(stranka);
+const datum = d.aktualizovano?.toLocaleDateString('cs-CZ', { day: 'numeric', month: 'long', year: 'numeric' });
+---
+
+<Zaklad titulek={d.seoTitulek ?? d.titulek} popis={d.seoPopis}>
+  <ZahlaviStranky nadpis={d.titulek} perex={d.perex}>
+    {datum && <p class="muted datum">Aktualizováno {datum}</p>}
+  </ZahlaviStranky>
+  <section class="container section section--tight-top">
+    <slot />
+    <div class="prose"><Content /></div>
+  </section>
+</Zaklad>
+
+<style>
+  .datum { margin-top: var(--space-4); font-size: var(--fs-sm); }
+</style>

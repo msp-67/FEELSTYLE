@@ -1,0 +1,182 @@
+---
+/**
+ * Mřížka projektů s filtrem podle typu a země.
+ * – Bez JS se zobrazí všechny projekty (filtr je skrytý).
+ * – Filtr ukazuje jen typy/země, které mezi projekty skutečně jsou; skupina „Země“ se objeví až od 2 zemí.
+ * – Stav filtru je v URL (?typ=vila&zeme=AT), takže jde sdílet odkaz.
+ * – Při velkém počtu projektů se zobrazuje po dávkách (tlačítko „Zobrazit další“).
+ */
+import ProjektKarta from './ProjektKarta.astro';
+import type { Projekt } from '../lib/projekty';
+import { TYPY, ZEME } from '../content.config';
+import { t, jazykZUrl } from '../i18n';
+
+interface Props {
+  projekty: Projekt[];
+  filtr?: boolean;
+  davka?: number;
+  /** Úroveň nadpisů karet – h2, když nad mřížkou není jiný h2. */
+  nadpisUroven?: 'h2' | 'h3';
+}
+const { projekty, filtr = true, davka = 24, nadpisUroven = 'h3' } = Astro.props;
+const s = t(jazykZUrl(Astro.url));
+
+const pocty = <K extends string>(klice: readonly K[], fn: (p: Projekt) => K) =>
+  klice.map((k) => ({ k, n: projekty.filter((p) => fn(p) === k).length })).filter((x) => x.n > 0);
+const typy = pocty(TYPY, (p) => p.data.typ);
+const zeme = pocty(ZEME, (p) => p.data.zeme);
+const zobrazitFiltr = filtr && (typy.length > 1 || zeme.length > 1);
+---
+
+<div class="projekty" data-projekty data-davka={davka}>
+  {zobrazitFiltr && (
+    <div class="filtr" data-filtr hidden>
+      {typy.length > 1 && (
+        <fieldset class="filtr__skupina">
+          <legend class="eyebrow">{s.projekty.filtrTyp}</legend>
+          <div class="filtr__volby">
+            <button type="button" class="filtr__volba" data-skupina="typ" data-hodnota="" aria-pressed="true">
+              {s.projekty.vse} <span class="filtr__pocet">{projekty.length}</span>
+            </button>
+            {typy.map(({ k, n }) => (
+              <button type="button" class="filtr__volba" data-skupina="typ" data-hodnota={k} aria-pressed="false">
+                {s.typy[k]} <span class="filtr__pocet">{n}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+      {zeme.length > 1 && (
+        <fieldset class="filtr__skupina">
+          <legend class="eyebrow">{s.projekty.filtrZeme}</legend>
+          <div class="filtr__volby">
+            <button type="button" class="filtr__volba" data-skupina="zeme" data-hodnota="" aria-pressed="true">
+              {s.projekty.vse}
+            </button>
+            {zeme.map(({ k, n }) => (
+              <button type="button" class="filtr__volba" data-skupina="zeme" data-hodnota={k} aria-pressed="false">
+                {s.zeme[k]} <span class="filtr__pocet">{n}</span>
+              </button>
+            ))}
+          </div>
+        </fieldset>
+      )}
+      <p class="filtr__stav" role="status" aria-live="polite" data-stav></p>
+    </div>
+  )}
+
+  <ul role="list" class="mrizka">
+    {projekty.map((p, i) => (
+      <li data-typ={p.data.typ} data-zeme={p.data.zeme}>
+        <ProjektKarta projekt={p} index={i} nadpisUroven={nadpisUroven} />
+      </li>
+    ))}
+  </ul>
+
+  <div class="prazdne" data-prazdne hidden>
+    <p>{s.projekty.zadnyVysledek}</p>
+    <button type="button" class="odkaz-sipka" data-zrusit>{s.projekty.zrusitFiltr}</button>
+  </div>
+
+  <div class="dalsi" data-dalsi-obal hidden>
+    <button type="button" class="btn btn--outline" data-dalsi>{s.projekty.zobrazitDalsi}</button>
+  </div>
+</div>
+
+<style>
+  .filtr { display: grid; gap: var(--space-5); margin-bottom: var(--space-8); }
+  .filtr__skupina { border: 0; padding: 0; min-width: 0; }
+  .filtr__skupina legend { margin-bottom: var(--space-3); padding: 0; }
+  .filtr__volby { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+  .filtr__volba {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: 2.75rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--c-line);
+    font-size: var(--fs-sm);
+    transition: border-color var(--dur-fast), background-color var(--dur-fast), color var(--dur-fast);
+  }
+  .filtr__volba:hover { border-color: var(--c-ink); }
+  .filtr__volba[aria-pressed='true'] { background: var(--c-ink); border-color: var(--c-ink); color: var(--c-paper); }
+  .filtr__pocet { font-size: var(--fs-xs); opacity: 0.65; }
+  .filtr__stav { font-size: var(--fs-sm); color: var(--c-muted); }
+
+  .mrizka {
+    display: grid;
+    gap: var(--space-8) var(--space-5);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 40em) { .mrizka { grid-template-columns: repeat(2, 1fr); } }
+  @media (min-width: 64em) { .mrizka { grid-template-columns: repeat(3, 1fr); } }
+  .mrizka > [hidden] { display: none; }
+
+  .prazdne { display: grid; gap: var(--space-4); justify-items: start; padding-block: var(--space-7); color: var(--c-muted); }
+  .dalsi { display: flex; justify-content: center; margin-top: var(--space-8); }
+</style>
+
+<script>
+  for (const obal of document.querySelectorAll<HTMLElement>('[data-projekty]')) {
+    const filtr = obal.querySelector<HTMLElement>('[data-filtr]');
+    const polozky = [...obal.querySelectorAll<HTMLLIElement>('.mrizka > li')];
+    const stav = obal.querySelector<HTMLElement>('[data-stav]');
+    const prazdne = obal.querySelector<HTMLElement>('[data-prazdne]')!;
+    const dalsiObal = obal.querySelector<HTMLElement>('[data-dalsi-obal]')!;
+    const davka = Number(obal.dataset.davka) || 24;
+    const tlacitka = [...obal.querySelectorAll<HTMLButtonElement>('.filtr__volba')];
+    const vybrano: Record<string, string> = { typ: '', zeme: '' };
+    let limit = davka;
+
+    const pocetText = (n: number) => `${n} ${n === 1 ? 'projekt' : n >= 2 && n <= 4 ? 'projekty' : 'projektů'}`;
+
+    const vykresli = (oznamit = true) => {
+      const shoda = polozky.filter(
+        (li) => (!vybrano.typ || li.dataset.typ === vybrano.typ) && (!vybrano.zeme || li.dataset.zeme === vybrano.zeme),
+      );
+      polozky.forEach((li) => (li.hidden = true));
+      shoda.slice(0, limit).forEach((li) => {
+        li.hidden = false;
+        li.querySelector('[data-reveal]')?.classList.add('je-videt');
+      });
+      prazdne.hidden = shoda.length > 0;
+      dalsiObal.hidden = shoda.length <= limit;
+      tlacitka.forEach((b) => b.setAttribute('aria-pressed', String(vybrano[b.dataset.skupina!] === b.dataset.hodnota)));
+      if (stav && oznamit) stav.textContent = pocetText(shoda.length);
+    };
+
+    const ulozDoUrl = () => {
+      const url = new URL(location.href);
+      for (const [k, v] of Object.entries(vybrano)) v ? url.searchParams.set(k, v) : url.searchParams.delete(k);
+      history.replaceState(null, '', url);
+    };
+
+    // Načtení stavu z URL
+    const params = new URLSearchParams(location.search);
+    for (const k of Object.keys(vybrano)) {
+      const v = params.get(k) ?? '';
+      if (tlacitka.some((b) => b.dataset.skupina === k && b.dataset.hodnota === v)) vybrano[k] = v;
+    }
+
+    tlacitka.forEach((b) =>
+      b.addEventListener('click', () => {
+        vybrano[b.dataset.skupina!] = b.dataset.hodnota ?? '';
+        limit = davka;
+        ulozDoUrl();
+        vykresli();
+      }),
+    );
+    obal.querySelector('[data-zrusit]')?.addEventListener('click', () => {
+      vybrano.typ = vybrano.zeme = '';
+      ulozDoUrl();
+      vykresli();
+    });
+    obal.querySelector('[data-dalsi]')?.addEventListener('click', () => {
+      limit += davka;
+      vykresli(false);
+    });
+
+    if (filtr) filtr.hidden = false;
+    vykresli(false);
+  }
+</script>

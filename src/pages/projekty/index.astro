@@ -1,0 +1,25 @@
+---
+import { getEntry } from 'astro:content';
+import Zaklad from '../../layouts/Zaklad.astro';
+import ZahlaviStranky from '../../components/ZahlaviStranky.astro';
+import ProjektyMrizka from '../../components/ProjektyMrizka.astro';
+import Vyzva from '../../components/Vyzva.astro';
+import T from '../../components/T.astro';
+import { vsechnyProjekty } from '../../lib/projekty';
+
+const stranka = (await getEntry('stranky', 'projekty'))!;
+const projekty = await vsechnyProjekty();
+---
+
+<Zaklad titulek={stranka.data.seoTitulek ?? stranka.data.titulek} popis={stranka.data.seoPopis} obrazek={projekty[0]?.data.hlavniFoto}>
+  <ZahlaviStranky nadpis={stranka.data.titulek} stitek="Realizace" />
+  <section class="container section section--tight-top" aria-label="Seznam projektů">
+    <ProjektyMrizka projekty={projekty} nadpisUroven="h2" />
+    {stranka.data.perex && <T as="p" class="poznamka" text={stranka.data.perex} />}
+  </section>
+  <Vyzva />
+</Zaklad>
+
+<style>
+  .poznamka { margin-top: var(--space-9); color: var(--c-muted); font-size: var(--fs-sm); max-width: 60ch; }
+</style>

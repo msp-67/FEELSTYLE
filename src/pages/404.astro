@@ -1,0 +1,23 @@
+---
+import Zaklad from '../layouts/Zaklad.astro';
+import { navigace } from '../config/navigace';
+---
+
+<Zaklad titulek="Stránka nenalezena" popis="Požadovaná stránka na webu Feel Style neexistuje nebo byla přesunuta." noindex>
+  <section class="container nenalezeno">
+    <p class="eyebrow">Chyba 404</p>
+    <h1 class="h-1">Tuto stránku jsme nenašli.</h1>
+    <p class="lead">Stránka mohla být přesunuta nebo odstraněna. Zkuste některý z odkazů níže.</p>
+    <ul role="list" class="odkazy">
+      <li><a href="/" class="btn">Úvodní stránka <span class="sipka" aria-hidden="true">→</span></a></li>
+      {navigace.cs.hlavni.map((o) => (
+        <li><a href={o.url} class="btn btn--outline">{o.nazev}</a></li>
+      ))}
+    </ul>
+  </section>
+</Zaklad>
+
+<style>
+  .nenalezeno { display: grid; gap: var(--space-5); justify-items: start; padding-block: var(--space-10); min-height: 60vh; align-content: center; }
+  .odkazy { display: flex; flex-wrap: wrap; gap: var(--space-3); margin-top: var(--space-5); }
+</style>

@@ -1,0 +1,126 @@
+---
+/**
+ * Úvodní hero. Podporuje video (src/config/web.ts → hero.video) s posterem;
+ * když video chybí, nenačte se, nebo má uživatel zapnuté omezení pohybu / úsporu dat, zůstane fotka.
+ */
+import { Image, getImage } from 'astro:assets';
+import { web } from '../config/web';
+
+interface Props {
+  odkazy?: { text: string; url: string; styl?: 'light' | 'ghost' }[];
+}
+const { odkazy = [] } = Astro.props;
+const { hero } = web;
+const maVideo = Boolean(hero.video.mp4 || hero.video.webm);
+const poster = maVideo ? await getImage({ src: hero.foto, width: 1920, format: 'webp' }) : null;
+---
+
+<section class="hero" aria-labelledby="hero-nadpis">
+  <div class="hero__media">
+    <Image
+      src={hero.foto}
+      alt={hero.fotoAlt}
+      layout="full-width"
+      priority
+      class="hero__foto"
+    />
+    {maVideo && (
+      <video
+        class="hero__video"
+        muted
+        loop
+        playsinline
+        preload="none"
+        poster={poster?.src}
+        aria-hidden="true"
+        data-hero-video
+      >
+        {hero.video.webm && <source src={hero.video.webm} type="video/webm" />}
+        {hero.video.mp4 && <source src={hero.video.mp4} type="video/mp4" />}
+      </video>
+    )}
+  </div>
+
+  <div class="hero__obsah container">
+    <h1 id="hero-nadpis" class="h-hero hero__nadpis">{hero.nadpis}</h1>
+    <div class="hero__spodek">
+      <p class="hero__podnadpis">{hero.podnadpis}</p>
+      {odkazy.length > 0 && (
+        <div class="hero__odkazy">
+          {odkazy.map((o) => (
+            <a href={o.url} class:list={['btn', o.styl === 'ghost' ? 'btn--ghost-light' : 'btn--light']}>
+              {o.text} <span class="sipka" aria-hidden="true">→</span>
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero {
+    position: relative;
+    display: grid;
+    align-items: end;
+    min-height: 100svh;
+    color: var(--c-paper);
+    background: var(--c-ink);
+    overflow: hidden;
+  }
+  .hero__media, .hero__media :global(img), .hero__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .hero__media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.62) 0%, rgb(0 0 0 / 0.12) 55%, rgb(0 0 0 / 0.25) 100%);
+  }
+  .hero__video { opacity: 0; transition: opacity 1.2s var(--ease-out); }
+  .hero__video[data-hraje] { opacity: 1; }
+  .hero__obsah {
+    position: relative;
+    padding-block: calc(var(--header-h) + var(--space-8)) clamp(var(--space-7), 8vh, var(--space-9));
+  }
+  .hero__nadpis { max-width: 14ch; }
+  .hero__spodek {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-6);
+    margin-top: var(--space-7);
+  }
+  .hero__podnadpis { max-width: 42ch; font-size: var(--fs-lg); line-height: 1.5; }
+  .hero__odkazy { display: flex; flex-wrap: wrap; gap: var(--space-3); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .hero__nadpis, .hero__spodek { animation: vstup 1.4s var(--ease-out) both; }
+    .hero__spodek { animation-delay: 0.25s; }
+    .hero__media :global(img) { animation: priblizeni 2.4s var(--ease-out) both; }
+  }
+  @keyframes vstup { from { opacity: 0; transform: translateY(24px); } }
+  @keyframes priblizeni { from { transform: scale(1.06); } }
+</style>
+
+<script>
+  const video = document.querySelector<HTMLVideoElement>('[data-hero-video]');
+  if (video) {
+    const omezit =
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      // @ts-ignore – Network Information API není ve všech prohlížečích
+      navigator.connection?.saveData === true;
+    if (omezit) {
+      video.remove();
+    } else {
+      video.addEventListener('playing', () => video.setAttribute('data-hraje', ''), { once: true });
+      video.addEventListener('error', () => video.remove(), true);
+      video.play().catch(() => video.remove());
+    }
+  }
+</script>

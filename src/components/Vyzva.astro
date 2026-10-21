@@ -1,0 +1,37 @@
+---
+import { cesta, t, jazykZUrl } from '../i18n';
+
+interface Props {
+  nadpis?: string;
+  text?: string;
+}
+const jazyk = jazykZUrl(Astro.url);
+const s = t(jazyk);
+const { nadpis = s.vyzva.nadpis, text = s.vyzva.text } = Astro.props;
+---
+
+<section class="vyzva section section--ink" aria-labelledby="vyzva-nadpis">
+  <div class="container vyzva__obsah" data-reveal>
+    <h2 id="vyzva-nadpis" class="h-1 vyzva__nadpis">{nadpis}</h2>
+    <div class="vyzva__prava">
+      <p class="vyzva__text">{text}</p>
+      <a href={cesta('/kontakt', jazyk)} class="btn btn--light">
+        {s.vyzva.tlacitko} <span class="sipka" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</section>
+
+<style>
+  .vyzva__obsah {
+    display: grid;
+    gap: var(--space-7);
+    align-items: end;
+  }
+  @media (min-width: 56em) {
+    .vyzva__obsah { grid-template-columns: 3fr 2fr; }
+  }
+  .vyzva__nadpis { max-width: 16ch; }
+  .vyzva__prava { display: grid; gap: var(--space-6); justify-items: start; }
+  .vyzva__text { color: var(--c-muted-on-ink); font-size: var(--fs-lg); max-width: 36ch; }
+</style>

@@ -1,0 +1,57 @@
+---
+import { firma } from '../config/firma';
+
+interface Props {
+  tmave?: boolean;
+}
+const { tmave = false } = Astro.props;
+---
+
+<div class="cisla-obal">
+  <dl class:list={['cisla', { 'cisla--tmave': tmave }]}>
+    {firma.cisla.map((c, i) => (
+      <div class="cisla__polozka" data-reveal style={`--reveal-delay:${i * 90}ms`}>
+        <dt class="cisla__popis">{c.popis}</dt>
+        <dd class="cisla__hodnota">{c.hodnota}</dd>
+      </div>
+    ))}
+  </dl>
+</div>
+
+<style>
+  /*
+   * Počet sloupců se řídí šířkou bloku (1 → 2 → 4) a velikost čísel šířkou sloupce,
+   * takže se nejdelší hodnota („> 1 mld. Kč“, ~4,3 em) vejde na jakékoli šířce obrazovky.
+   */
+  .cisla-obal { container-type: inline-size; }
+  .cisla {
+    --sloupce: 1;
+    --mezera: var(--space-5);
+    display: grid;
+    grid-template-columns: repeat(var(--sloupce), minmax(0, 1fr));
+    border-top: 1px solid var(--c-line);
+  }
+  @container (min-width: 30rem) { .cisla { --sloupce: 2; } }
+  @container (min-width: 60rem) { .cisla { --sloupce: 4; } }
+  .cisla--tmave { border-color: var(--c-line-on-ink); }
+  .cisla__polozka {
+    display: flex;
+    flex-direction: column-reverse;
+    justify-content: flex-end;
+    gap: var(--space-2);
+    padding: var(--space-6) var(--mezera) var(--space-6) 0;
+    border-bottom: 1px solid var(--c-line);
+  }
+  .cisla--tmave .cisla__polozka { border-color: var(--c-line-on-ink); }
+  .cisla__hodnota {
+    font-family: var(--font-display);
+    /* Šířka sloupce bez mezery děleno 4,8 em – s rezervou i pro záložní písmo. */
+    font-size: min(var(--fs-stat), calc((100cqi / var(--sloupce) - var(--mezera)) / 4.8));
+    font-weight: var(--fw-regular);
+    line-height: 1;
+    letter-spacing: var(--tracking-tight);
+    white-space: nowrap;
+  }
+  .cisla__popis { color: var(--c-muted); font-size: var(--fs-sm); }
+  .cisla--tmave .cisla__popis { color: var(--c-muted-on-ink); }
+</style>

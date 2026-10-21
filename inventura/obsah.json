@@ -1,0 +1,178 @@
+{
+  "_poznamka": "Doslovný přepis obsahu webu https://www.feelstyle.cz (Framer), staženo 2026-10-16. Texty jsou BEZ úprav, včetně chyb a zbytků šablony. Čištění proběhne až při stavbě nového webu.",
+  "web": {
+    "domena": "https://www.feelstyle.cz",
+    "logo_text": "FEEL STYLE",
+    "pisma": ["Urbanist", "Inter"],
+    "barvy": { "cerna": "#000000", "bila": "#ffffff", "svetle_seda": "#f8f8f8", "seda_text": "#616161" },
+    "favicon": { "svetly_rezim": "obrazky/web/favicon-svetly-rezim.png", "tmavy_rezim": "obrazky/web/favicon-tmavy-rezim.png", "poznamka": "Obecný tvar ze šablony, není to logo Feel Style." },
+    "og_image_vychozi": "obrazky/projekty/dum-ujezd/01-hlavni.png",
+    "menu": [
+      { "nazev": "Domů", "url": "/" },
+      { "nazev": "O Nás", "url": "/o-nas" },
+      { "nazev": "Projekty", "url": "/projekty" },
+      { "nazev": "Kontakt", "url": "/kontakt" }
+    ],
+    "paticka": ["FEEL STYLE s.r.o.", "Feel Style s. r. o. 2025", "Gerstelova 1068/8", "190 00 Praha 9 - Vysočany"]
+  },
+
+  "firma": {
+    "nazev": "FEEL STYLE s.r.o.",
+    "ico": "028 73 613",
+    "dic": "CZ 028 73 613",
+    "fakturacni_adresa": { "ulice": "Gerstelova 1068/8", "psc_mesto": "190 00 Praha 9 - Vysočany" },
+    "adresa_kancelare": { "ulice": "Malostranské Nábřeží 563", "mesto": "Praha 1" },
+    "emaily": {
+      "faktury": "faktury@feelstyle.cz",
+      "kontakt": ["hostakova@feelstyle.cz", "drahonovska@feelstyle.cz"]
+    },
+    "telefon": null,
+    "_ares_2026-10-16": { "sidlo": "Gerstelova 1068/8, Vysočany, 19000 Praha 9", "dic": "CZ02873613", "datum_vzniku": "2014-04-08" }
+  },
+
+  "stranky": {
+    "/": {
+      "title": "Feel Style - Domů",
+      "description": "Feel Style - Stavební Firma",
+      "hero": {
+        "obrazek": "obrazky/projekty/dum-ujezd/01-hlavni.png",
+        "alt_puvodni": "Modern House",
+        "h1": "Měníme plány ve skutečnost",
+        "tlacitka": [
+          { "text": "Prozkoumejte naše stavby", "url": null },
+          { "text": "Více o Projektech", "url": "/projekty" },
+          { "text": "O Nás", "url": "/o-nas" }
+        ]
+      },
+      "uvod": "Feel Style je dynamická a inovativní stavební firma, která dokáže váš sen změnit v realitu.",
+      "cisla": [
+        { "hodnota": "24+", "popis": "Let zkušeností" },
+        { "hodnota": "250+", "popis": "Hotových staveb" },
+        { "hodnota": "> 1 OOO OOO OOO Kč", "popis": "Celková hodnota projektů" }
+      ],
+      "sluzby": {
+        "nadpis": "Naše Služby",
+        "polozky": [
+          { "nazev": "Vily", "text": "Stavíme moderní i klasické vily na míru vašim představám. Zaměřujeme se na precizní provedení, kvalitní materiály a energeticky úsporná řešení. Každá vila je originál, který odráží životní styl a potřeby majitele.", "obrazek": "obrazky/web/sluzby-vily.png" },
+          { "nazev": "Byty", "text": "Realizujeme funkční a stylové byty s důrazem na pohodlí, praktičnost a moderní design. Od návrhu po finální úpravy dbáme na kvalitu a detail, aby váš nový byt byl skutečným domovem.", "obrazek": "obrazky/projekty/byt-praha2/01-hlavni.jpg" },
+          { "nazev": "Renovace", "text": "Provádíme kompletní renovace domů, bytů i komerčních prostor. Zachováme hodnotu původní stavby, přidáme moderní prvky a zlepšíme funkčnost. Díky našim zkušenostem získáte krásný, bezpečný a praktický prostor.", "obrazek": "obrazky/projekty/byt-praha1/02.jpg" }
+        ],
+        "_zdroj": "Texty Byty a Renovace jsou jen v JS bundlu (záložky), ne v HTML."
+      },
+      "projekty": "4 nejnovější z kolekce projektů"
+    },
+
+    "/o-nas": {
+      "title": "O Nás - Feel Style",
+      "description": "Feel Style s. r. o. - stavební firma",
+      "h1": "O Nás",
+      "odstavce": [
+        "Feel Style s.r.o. je stavební společnost zaměřená výhradně na realizaci projektů pro přímé investory. Na trhu působíme od roku 2001 a za více než dvacet let jsme získali bohaté zkušenosti se stavbami nejrůznějšího charakteru. Od rezidenčních vil a bytových domů až po komerční a průmyslové objekty.",
+        "Za tu dobu jsme úspěšně dokončili více než 250 projektů s celkovým objemem investic přesahujícím 1 miliardu korun. Každá realizace pro nás představuje nejen stavební úkol, ale i příležitost vytvořit dílo, které dlouhodobě slouží svému účelu a přináší investorům skutečnou hodnotu.",
+        "Naše působnost nekončí hranicemi České republiky. Máme zkušenosti se stavbami v Rakousku, Francii i na Slovensku, kde jsme úspěšně adaptovali naše know-how na místní podmínky a legislativu. Díky tomu dokážeme nabídnout mezinárodní standardy a zároveň flexibilitu potřebnou pro každý konkrétní projekt.",
+        "Zázemí firmy tvoří více než 80 stálých spolupracovníků – zkušených odborníků z různých stavebních oborů. Disponujeme také vlastní dopravní a strojní technikou, což nám umožňuje efektivně plánovat, řídit a realizovat projekty bez zbytečných prodlev a závislosti na externích dodavatelích.",
+        "Naší prioritou je profesionální přístup, transparentní komunikace a vysoká kvalita provedení. Díky stabilnímu týmu, dlouholetým zkušenostem a moderním technologiím jsme spolehlivým partnerem pro investory, kteří hledají jistotu, efektivitu a výsledek odpovídající nejvyšším standardům."
+      ],
+      "obrazek": "obrazky/projekty/byt-praha1/03.jpg",
+      "alt_puvodni": "Modern Residence"
+    },
+
+    "/projekty": {
+      "title": "Feel Style - Projekty",
+      "description": "Feel Style - Stavební Firma",
+      "h1": "Ukázky projektů",
+      "poznamka": "*Uvedeny jsou pouze některé stavby, pokud byste měli zájem, neváhejte nám napsat o celé portfolio."
+    },
+
+    "/kontakt": {
+      "title": "Kontakt - Feel Style",
+      "description": "Feel Style - Stavební Firma",
+      "h1": "Kontakt",
+      "bloky": ["Fakturační adresa", "E-mail", "Adresa kanceláře"],
+      "obrazek": "obrazky/projekty/byt-praha1/03.jpg",
+      "alt_puvodni": "North Architecture Office",
+      "formular": null
+    }
+  },
+
+  "projekty": [
+    {
+      "poradi": 1,
+      "url": "/projekty/dum-ujezd",
+      "slug": "dum-ujezd",
+      "title_puvodni": "Dům Trněný Újezd - North",
+      "nazev": "Dům Trněný Újezd",
+      "klient": "De.Fakto",
+      "misto": "Trněný Újezd",
+      "typ": "Rodinný dům",
+      "text": [
+        "Moderní rodinná vila v Trněném Újezdu vznikla podle návrhu architekta Martina Sladkého ze studia de.fakto. Tři samostatné hmoty domu jsou propojené prosklenými krčky, které přirozeně rozdělují obytné zóny a zároveň umožňují průhledy do zahrady i okolní krajiny.",
+        "Fasádu a střechu hlavní budovy pokrývá keramický obklad značky Porcelanosa v dekoru dřeva, kladený do parketového vzoru. Tento materiál je odolný, trvanlivý a nenáročný na údržbu.",
+        "Interiéry jsou sjednoceny dlažbou PAR-KER a doplněny sanitárními prvky Noken. Výrazným prvkem je vana z umělého kamene Krion s decentním podsvícením, která spolu s umyvadly ze stejného materiálu dotváří čistý a moderní vzhled koupelen.",
+        "Vila kombinuje tradiční tvarosloví s moderními technologiemi a materiály, čímž vytváří komfortní a esteticky působivé bydlení."
+      ],
+      "obrazky": [
+        { "soubor": "obrazky/projekty/dum-ujezd/01-hlavni.png", "rozliseni": "2372x1580", "role": "hlavní", "framer": "RdertRNbXhdshnQ6sMKOHmS8.png" },
+        { "soubor": "obrazky/projekty/dum-ujezd/02.jpg", "rozliseni": "2000x1500", "role": "galerie", "framer": "hWPNOWsRk1MQaJz4bw7DXdU70.jpeg" },
+        { "soubor": "obrazky/projekty/dum-ujezd/03.jpg", "rozliseni": "2000x1500", "role": "galerie", "framer": "O9aqpgTitB6Swb0kpELJGfBxk4.jpeg" }
+      ]
+    },
+    {
+      "poradi": 2,
+      "url": "/projekty/vila-cernosice",
+      "slug": "vila-cernosice",
+      "title_puvodni": "Galerie Lidské Tvořivosti - North",
+      "nazev": "Galerie Lidské Tvořivosti",
+      "klient": "De.Fakto",
+      "misto": "Černošice",
+      "typ": "Rodinný dům",
+      "text_puvodni_se_zbytky_citaci": [
+        "Rodinný dům nazvaný „Galerie lidské tvořivosti“ stojí nad údolím Berounky v Černošicích. Autor projektu, ateliér de.fakto (Martin Sladký a Filip Hejzlar), navrhl strukturu, která vychází ze sklonu terénu – prosklená budova jakoby vyrůstá ze svahu a lemuje ji téměř 50 metrů dlouhé průčelí. V domě je minimum sériových prvků – každý detail je originál [odkaz: https://life.forbes.cz/vila-snu-za-200-milionu-architekti-z-de-fakto-ukazali-maximum-mozneho/?utm_source=chatgpt.com] idnes.cz+13life.forbes.cz+13earch.cz+13.",
+        "Interiéry využívají maximálně výhledové potenciály, které sahají až do garáže, tělocvičny, sauny a koupelen. Dům je vybaven unikátním systémem topení a chlazení zabudovaným v uměleckých skulpturách – reaguje okamžitě na změny vnějších podmínek [odkaz: https://www.janosik.cz/homepage/5281id/vila-cernosice/?utm_source=chatgpt.com] janosik.cz+1life.forbes.cz+1. Navíc obsahuje inovativní rekuperační technologii, která distribuuje vzduch pouze skrze fasády jednotlivých místností, bez tradičních rozvodů – díky tomu je čistší a efektivnější výměna vzduchu janosik.cz"
+      ],
+      "obrazky": [
+        { "soubor": "obrazky/projekty/vila-cernosice/01-hlavni.png", "rozliseni": "2238x1434", "role": "hlavní", "framer": "bsCb0O6ydAogL9AuSI9eqQsOdw.png" },
+        { "soubor": "obrazky/projekty/vila-cernosice/02.jpg", "rozliseni": "1024x653", "role": "galerie", "framer": "9DCzIaj43GpgdpnliS2hmk04zU.jpeg", "poznamka": "nízké rozlišení" },
+        { "soubor": "obrazky/projekty/vila-cernosice/03.jpg", "rozliseni": "768x1024", "role": "galerie", "framer": "66EV2pfstV4BQnyEucP1qQAIw.jpeg", "poznamka": "nízké rozlišení" }
+      ]
+    },
+    {
+      "poradi": 3,
+      "url": "/projekty/byt-praha1",
+      "slug": "byt-praha1",
+      "title_puvodni": "Byt Praha - North",
+      "nazev": "Byt Praha",
+      "klient": "-",
+      "misto": "Praha",
+      "typ": "Byt",
+      "text": [],
+      "obrazky": [
+        { "soubor": "obrazky/projekty/byt-praha1/01-hlavni.jpg", "rozliseni": "1600x1066", "role": "hlavní", "framer": "wxpo68OxtGraPgrRTZ3mGzxiYU.jpeg" },
+        { "soubor": "obrazky/projekty/byt-praha1/02.jpg", "rozliseni": "1600x1066", "role": "galerie", "framer": "K9jdM6kb5bKzFH6GSO1LoVW3tao.jpeg" },
+        { "soubor": "obrazky/projekty/byt-praha1/03.jpg", "rozliseni": "1066x1600", "role": "galerie", "framer": "kWkAtCT4u5ec5TnIj1adUshq3uY.jpeg", "poznamka": "stejná fotka je i na O nás a Kontakt" }
+      ]
+    },
+    {
+      "poradi": 4,
+      "url": "/projekty/byt-praha2",
+      "slug": "byt-praha2",
+      "title_puvodni": "Dům Praha - North",
+      "nazev": "Dům Praha",
+      "klient": "-",
+      "misto": "Praha",
+      "typ": "Rodinný Dům",
+      "text": [],
+      "obrazky": [
+        { "soubor": "obrazky/projekty/byt-praha2/01-hlavni.jpg", "rozliseni": "1600x1066", "role": "hlavní", "framer": "KA0d91wsw1Z0VIOVqXybyMBzvs.jpeg" },
+        { "soubor": "obrazky/projekty/byt-praha2/02.jpg", "rozliseni": "1600x1066", "role": "galerie", "framer": "j5TLXXVKhIUCESu6bEuc2UsffWU.jpeg" },
+        { "soubor": "obrazky/projekty/byt-praha2/03.jpg", "rozliseni": "1600x1066", "role": "galerie", "framer": "QHxFqTClzEYl66uSVNmNwmzWOMY.jpeg" }
+      ]
+    }
+  ],
+
+  "zbytky_sablony_north": {
+    "titulky": ["Dům Trněný Újezd - North", "Galerie Lidské Tvořivosti - North", "Byt Praha - North", "Dům Praha - North"],
+    "alt_texty": ["North Architecture Office (Kontakt)", "Modern House (Domů)", "Modern Residence (O nás)"],
+    "v_js_nezobrazeno": ["logo north-logo.svg", "north@architecture.com", "3891 Ranchview Dr. Richardson, California 62639", "tel:0000000012", "4 ilustrační AI fotky šablony (obrazky/_sablona-north-nepouzito)"]
+  }
+}

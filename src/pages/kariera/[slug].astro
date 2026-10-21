@@ -1,0 +1,74 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import Zaklad from '../../layouts/Zaklad.astro';
+import ZahlaviStranky from '../../components/ZahlaviStranky.astro';
+import PoslatCV from '../../components/PoslatCV.astro';
+import { firma } from '../../config/firma';
+import { web } from '../../config/web';
+import { bezDoplnit, maObsah, zkrat } from '../../lib/text';
+import { t } from '../../i18n';
+
+export const getStaticPaths = (async () => {
+  const pozice = (await getCollection('pozice')).filter((p) => p.data.aktivni);
+  return pozice.map((p) => ({ params: { slug: p.id }, props: { pozice: p } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  pozice: CollectionEntry<'pozice'>;
+}
+const { pozice } = Astro.props;
+const d = pozice.data;
+const s = t('cs').kariera;
+const { Content } = await render(pozice);
+const a = firma.adresy[firma.hlavniAdresa];
+
+const jobPosting = {
+  '@type': 'JobPosting',
+  title: d.nazev,
+  description: d.perex,
+  datePosted: d.zverejneno.toISOString().slice(0, 10),
+  employmentType: d.uvazek,
+  hiringOrganization: { '@type': 'Organization', name: firma.nazev, sameAs: web.url },
+  jobLocation: {
+    '@type': 'Place',
+    address: {
+      '@type': 'PostalAddress',
+      addressLocality: d.lokalita,
+      addressCountry: a.zeme,
+      ...(bezDoplnit(a.psc) && d.lokalita === 'Praha' && { postalCode: a.psc.replaceAll(' ', '') }),
+    },
+  },
+};
+---
+
+<Zaklad titulek={d.nazev} popis={zkrat(d.seoPopis ?? d.perex)} jsonLd={[jobPosting]}>
+  <ZahlaviStranky
+    nadpis={d.nazev}
+    stitek="Kariéra"
+    perex={d.perex}
+    drobky={[{ nazev: 'Domů', url: '/' }, { nazev: 'Kariéra', url: '/kariera' }, { nazev: d.nazev }]}
+  >
+    <dl class="info">
+      <div><dt>{s.lokalita}</dt><dd>{d.lokalita}</dd></div>
+      <div><dt>{s.uvazek}</dt><dd>{d.uvazek}</dd></div>
+      {d.nastup && <div><dt>{s.nastup}</dt><dd>{d.nastup}</dd></div>}
+    </dl>
+  </ZahlaviStranky>
+
+  <section class="container section section--tight-top">
+    {maObsah(pozice.body) && <div class="prose text"><Content /></div>}
+    <div class="akce">
+      <PoslatCV text={s.reagovat} predmet={`Reakce na pozici: ${d.nazev}`} />
+      <a href="/kariera" class="odkaz-sipka">← {s.zpet}</a>
+    </div>
+  </section>
+</Zaklad>
+
+<style>
+  .info { display: flex; flex-wrap: wrap; gap: var(--space-7); margin-top: var(--space-7); }
+  .info dt { font-size: var(--fs-xs); letter-spacing: var(--tracking-wide); text-transform: uppercase; color: var(--c-muted); }
+  .info dd { margin-top: var(--space-1); font-weight: var(--fw-medium); }
+  .text { font-size: var(--fs-lg); }
+  .akce { display: flex; flex-wrap: wrap; align-items: center; gap: var(--space-6); margin-top: var(--space-8); }
+</style>

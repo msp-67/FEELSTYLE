@@ -1,0 +1,82 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import Zaklad from '../layouts/Zaklad.astro';
+import ZahlaviStranky from '../components/ZahlaviStranky.astro';
+import KontaktFormular from '../components/KontaktFormular.astro';
+import T from '../components/T.astro';
+import { firma } from '../config/firma';
+import { jeDoplnit, maObsah } from '../lib/text';
+
+const stranka = (await getEntry('stranky', 'kontakt'))!;
+const d = stranka.data;
+const adresy = Object.values(firma.adresy);
+---
+
+<Zaklad titulek={d.seoTitulek ?? d.titulek} popis={d.seoPopis} obrazek={d.obrazek} obrazekAlt={d.obrazekAlt}>
+  <ZahlaviStranky nadpis={d.titulek} stitek="Feel Style s.r.o." perex={d.perex} />
+
+  <section class="container section section--tight-top kontakt">
+    <div class="kontakt__udaje" data-reveal>
+      <div class="blok">
+        <h2 class="eyebrow">E-mail</h2>
+        <ul role="list">
+          {firma.emaily.kontakt.map((e) => <li><a href={`mailto:${e}`}>{e}</a></li>)}
+        </ul>
+      </div>
+      {maObsah(firma.telefon) && (
+        <div class="blok">
+          <h2 class="eyebrow">Telefon</h2>
+          {jeDoplnit(firma.telefon) ? <T as="p" text={firma.telefon} /> : <p><a href={`tel:${firma.telefon.replaceAll(' ', '')}`}>{firma.telefon}</a></p>}
+        </div>
+      )}
+      {adresy.map((a) => (
+        <div class="blok">
+          <h2 class="eyebrow">{a.nazev}</h2>
+          <address>
+            {firma.nazev}<br />
+            {a.ulice}<br />
+            <T text={`${a.psc} ${a.mesto}`} />
+          </address>
+        </div>
+      ))}
+      <div class="blok">
+        <h2 class="eyebrow">Fakturační údaje</h2>
+        <p>
+          IČO {firma.ico}<br />
+          DIČ {firma.dic}<br />
+          <a href={`mailto:${firma.emaily.faktury}`}>{firma.emaily.faktury}</a>
+        </p>
+        <T as="p" class="muted zapis" text={firma.zapis} />
+      </div>
+    </div>
+
+    <div class="kontakt__formular" data-reveal>
+      <h2 class="h-2 formular-nadpis">Napište nám</h2>
+      <KontaktFormular />
+    </div>
+  </section>
+
+  {d.obrazek && (
+    <div class="container section section--tight-top" data-reveal>
+      <Image src={d.obrazek} alt={d.obrazekAlt ?? ''} widths={[640, 960, 1440]} sizes="(min-width: 90em) 1440px, 100vw" layout="none" class="foto" />
+    </div>
+  )}
+</Zaklad>
+
+<style>
+  .kontakt { display: grid; gap: var(--space-9); }
+  @media (min-width: 64em) {
+    .kontakt { grid-template-columns: 1fr 1.6fr; gap: var(--space-10); }
+  }
+  .kontakt__udaje { display: grid; gap: var(--space-7); align-content: start; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); }
+  @media (min-width: 64em) { .kontakt__udaje { grid-template-columns: 1fr; } }
+  .blok .eyebrow { margin-bottom: var(--space-3); }
+  .blok a { text-decoration: none; border-bottom: 1px solid var(--c-line); }
+  .blok a:hover { border-color: currentColor; }
+  address { font-style: normal; }
+  .zapis { margin-top: var(--space-3); font-size: var(--fs-sm); }
+  .formular-nadpis { margin-bottom: var(--space-6); }
+  .foto { width: 100%; aspect-ratio: 21 / 9; object-fit: cover; }
+  @media (max-width: 40em) { .foto { aspect-ratio: 4 / 3; } }
+</style>

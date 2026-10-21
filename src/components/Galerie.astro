@@ -1,0 +1,217 @@
+---
+/**
+ * Galerie s lightboxem (nativní <dialog>, bez knihoven).
+ * Bez JS vedou náhledy přímo na velkou fotku. S JS: šipky, Esc, swipe, návrat fokusu.
+ */
+import { Image, getImage } from 'astro:assets';
+import type { Foto } from '../lib/projekty';
+import { t, jazykZUrl } from '../i18n';
+
+interface Props {
+  fotky: Foto[];
+  nadpis?: string;
+}
+const { fotky, nadpis } = Astro.props;
+const s = t(jazykZUrl(Astro.url));
+
+const velke = await Promise.all(
+  fotky.map((f) => getImage({ src: f.src, width: Math.min(f.src.width, 2400), format: 'webp', quality: 82 })),
+);
+// Rozvržení: na šířku zabírá dva sloupce, na výšku jeden.
+const naSirku = fotky.map((f) => f.src.width >= f.src.height);
+---
+
+{fotky.length > 0 && (
+  <section class="galerie" aria-label={nadpis ?? s.projekty.galerie} data-galerie>
+    {nadpis && <h2 class="h-2 galerie__nadpis">{nadpis}</h2>}
+    <ul role="list" class="galerie__mrizka">
+      {fotky.map((f, i) => (
+        <li class:list={['galerie__polozka', { 'galerie__polozka--siroka': naSirku[i] }]} data-reveal>
+          <a
+            href={velke[i].src}
+            class="galerie__odkaz foto-zoom"
+            data-index={i}
+            data-src={velke[i].src}
+            data-sirka={velke[i].attributes.width}
+            data-vyska={velke[i].attributes.height}
+            data-alt={f.alt}
+            aria-label={s.projekty.otevritFoto(i + 1, fotky.length)}
+          >
+            <Image
+              src={f.src}
+              alt={f.alt}
+              widths={[480, 800, 1200, 1600]}
+              sizes={naSirku[i] ? '(min-width: 56em) 66vw, 100vw' : '(min-width: 56em) 33vw, 100vw'}
+              layout="none"
+            />
+          </a>
+        </li>
+      ))}
+    </ul>
+
+    <dialog class="lightbox" aria-label={s.lightbox.dialog} data-lightbox>
+      <figure class="lightbox__figure">
+        <img class="lightbox__img" alt="" data-lightbox-img decoding="async" />
+        <figcaption class="lightbox__popis">
+          <span data-lightbox-popis></span>
+          <span class="lightbox__pocitadlo" data-lightbox-pocitadlo></span>
+        </figcaption>
+      </figure>
+      <button type="button" class="lightbox__btn lightbox__zavrit" data-lightbox-zavrit aria-label={s.lightbox.zavrit}>
+        <span aria-hidden="true">✕</span>
+      </button>
+      {fotky.length > 1 && (
+        <>
+          <button type="button" class="lightbox__btn lightbox__predchozi" data-lightbox-predchozi aria-label={s.lightbox.predchozi}>
+            <span aria-hidden="true">←</span>
+          </button>
+          <button type="button" class="lightbox__btn lightbox__dalsi" data-lightbox-dalsi aria-label={s.lightbox.dalsi}>
+            <span aria-hidden="true">→</span>
+          </button>
+        </>
+      )}
+    </dialog>
+  </section>
+)}
+
+<style>
+  .galerie__nadpis { margin-bottom: var(--space-7); }
+  .galerie__mrizka {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+  @media (min-width: 56em) {
+    .galerie__mrizka { grid-template-columns: repeat(3, 1fr); grid-auto-flow: dense; }
+    .galerie__polozka--siroka { grid-column: span 2; }
+  }
+  .galerie__odkaz { display: block; aspect-ratio: 2 / 3; background: var(--c-mist); cursor: zoom-in; }
+  /* 4:3 přes dva sloupce má stejnou výšku jako 2:3 v jednom sloupci → řádky lícují. */
+  .galerie__polozka--siroka .galerie__odkaz { aspect-ratio: 4 / 3; }
+  .galerie__odkaz :global(img) { width: 100%; height: 100%; object-fit: cover; }
+
+  .lightbox {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: rgb(0 0 0 / 0.96);
+    color: var(--c-paper);
+    overscroll-behavior: contain;
+  }
+  .lightbox::backdrop { background: rgb(0 0 0 / 0.96); }
+  .lightbox[open] { display: grid; place-items: center; animation: lb-vstup var(--dur-base) var(--ease-out); }
+  @keyframes lb-vstup { from { opacity: 0; } }
+  .lightbox__figure {
+    display: grid;
+    gap: var(--space-3);
+    justify-items: center;
+    max-width: calc(100vw - 2 * var(--space-4));
+    padding-inline: clamp(var(--space-4), 6vw, 6rem);
+  }
+  .lightbox__img {
+    max-width: 100%;
+    max-height: calc(100dvh - 9rem);
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    transition: opacity var(--dur-fast);
+  }
+  .lightbox__img[data-nacita] { opacity: 0.3; }
+  .lightbox__popis {
+    display: flex;
+    gap: var(--space-5);
+    justify-content: space-between;
+    width: 100%;
+    font-size: var(--fs-sm);
+    color: var(--c-muted-on-ink);
+  }
+  .lightbox__pocitadlo { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .lightbox__btn {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 3rem;
+    height: 3rem;
+    font-size: 1.25rem;
+    color: var(--c-paper);
+    border: 1px solid rgb(255 255 255 / 0.25);
+    background: rgb(0 0 0 / 0.4);
+    transition: background-color var(--dur-fast), border-color var(--dur-fast);
+  }
+  .lightbox__btn:hover { background: var(--c-paper); color: var(--c-ink); }
+  .lightbox__btn:focus-visible { outline-color: var(--c-paper); }
+  .lightbox__zavrit { top: var(--space-4); right: var(--space-4); }
+  .lightbox__predchozi { left: var(--space-4); top: 50%; translate: 0 -50%; }
+  .lightbox__dalsi { right: var(--space-4); top: 50%; translate: 0 -50%; }
+  @media (max-width: 40em) {
+    .lightbox__predchozi, .lightbox__dalsi { top: auto; bottom: var(--space-4); translate: none; }
+  }
+</style>
+
+<script>
+  for (const galerie of document.querySelectorAll<HTMLElement>('[data-galerie]')) {
+    const dialog = galerie.querySelector<HTMLDialogElement>('[data-lightbox]');
+    if (!dialog || typeof dialog.showModal !== 'function') continue;
+    const odkazy = [...galerie.querySelectorAll<HTMLAnchorElement>('a[data-index]')];
+    const img = dialog.querySelector<HTMLImageElement>('[data-lightbox-img]')!;
+    const popis = dialog.querySelector<HTMLElement>('[data-lightbox-popis]')!;
+    const pocitadlo = dialog.querySelector<HTMLElement>('[data-lightbox-pocitadlo]')!;
+    let aktualni = 0;
+    let spoustec: HTMLElement | null = null;
+
+    const zobraz = (i: number) => {
+      aktualni = (i + odkazy.length) % odkazy.length;
+      const a = odkazy[aktualni];
+      img.setAttribute('data-nacita', '');
+      img.onload = () => img.removeAttribute('data-nacita');
+      img.src = a.dataset.src!;
+      img.width = Number(a.dataset.sirka);
+      img.height = Number(a.dataset.vyska);
+      img.alt = a.dataset.alt ?? '';
+      popis.textContent = a.dataset.alt ?? '';
+      pocitadlo.textContent = `${aktualni + 1} / ${odkazy.length}`;
+      // Přednačtení sousedních fotek
+      [aktualni + 1, aktualni - 1].forEach((j) => {
+        const s = odkazy[(j + odkazy.length) % odkazy.length]?.dataset.src;
+        if (s) new Image().src = s;
+      });
+    };
+
+    odkazy.forEach((a, i) =>
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        spoustec = a;
+        zobraz(i);
+        dialog.showModal();
+        document.documentElement.style.overflow = 'hidden';
+      }),
+    );
+
+    dialog.addEventListener('close', () => {
+      document.documentElement.style.overflow = '';
+      spoustec?.focus();
+    });
+    dialog.querySelector('[data-lightbox-zavrit]')?.addEventListener('click', () => dialog.close());
+    dialog.querySelector('[data-lightbox-predchozi]')?.addEventListener('click', () => zobraz(aktualni - 1));
+    dialog.querySelector('[data-lightbox-dalsi]')?.addEventListener('click', () => zobraz(aktualni + 1));
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) dialog.close();
+    });
+    dialog.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') zobraz(aktualni + 1);
+      if (e.key === 'ArrowLeft') zobraz(aktualni - 1);
+    });
+
+    // Swipe na dotykových zařízeních
+    let startX = 0;
+    dialog.addEventListener('touchstart', (e) => (startX = e.touches[0].clientX), { passive: true });
+    dialog.addEventListener('touchend', (e) => {
+      const dx = e.changedTouches[0].clientX - startX;
+      if (Math.abs(dx) > 50) zobraz(aktualni + (dx < 0 ? 1 : -1));
+    });
+  }
+</script>

@@ -1,0 +1,26 @@
+---
+import T from './T.astro';
+import Drobky, { type Drobek } from './Drobky.astro';
+
+interface Props {
+  nadpis: string;
+  stitek?: string;
+  perex?: string;
+  drobky?: Drobek[];
+}
+const { nadpis, stitek, perex, drobky } = Astro.props;
+---
+
+<header class="zahlavi container">
+  {drobky && <Drobky polozky={drobky} />}
+  {stitek && <p class="eyebrow">{stitek}</p>}
+  <h1 class="h-1 zahlavi__nadpis">{nadpis}</h1>
+  {perex && <T as="p" class="lead zahlavi__perex" text={perex} />}
+  <slot />
+</header>
+
+<style>
+  .zahlavi { padding-block: clamp(var(--space-8), 10vw, var(--space-10)) clamp(var(--space-7), 6vw, var(--space-9)); }
+  .zahlavi__nadpis { max-width: 18ch; margin-top: var(--space-3); }
+  .zahlavi__perex { margin-top: var(--space-6); }
+</style>

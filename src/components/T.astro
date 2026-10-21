@@ -1,0 +1,19 @@
+---
+/**
+ * Vypíše text a zvýrazní v něm placeholdery [DOPLNIT: …] – nebo je vynechá, když jsou skryté.
+ * Pokud po vynechání nic nezůstane, nevykreslí se ani obalující element.
+ * Použití: <T text={…} /> nebo <T as="p" text={…} />
+ */
+import { maObsah, zvyrazni } from '../lib/text';
+
+interface Props {
+  text: string;
+  as?: 'span' | 'p' | 'h1' | 'h2' | 'h3' | 'dd' | 'li' | 'div';
+  class?: string;
+  [atribut: string]: unknown;
+}
+// Ostatní atributy (vč. data-astro-cid-* rodiče) se přeposílají, aby fungovaly scoped styly rodiče.
+const { text, as: Tag = 'span', class: className, ...ostatni } = Astro.props;
+---
+
+{maObsah(text) && <Tag class={className} {...ostatni} set:html={zvyrazni(text)} />}

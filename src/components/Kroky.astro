@@ -1,0 +1,41 @@
+---
+import T from './T.astro';
+
+interface Props {
+  kroky: { nazev: string; text: string }[];
+  tmave?: boolean;
+}
+const { kroky, tmave = false } = Astro.props;
+---
+
+<ol role="list" class:list={['kroky', { 'kroky--tmave': tmave }]}>
+  {kroky.map((k, i) => (
+    <li class="krok" data-reveal style={`--reveal-delay:${(i % 3) * 90}ms`}>
+      <span class="krok__cislo" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+      <h3 class="krok__nazev"><span class="visually-hidden">{i + 1}. </span><T text={k.nazev} /></h3>
+      <T as="p" class="krok__text" text={k.text} />
+    </li>
+  ))}
+</ol>
+
+<style>
+  .kroky {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    gap: 0 var(--space-5);
+    counter-reset: krok;
+  }
+  .krok {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3);
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--c-line);
+  }
+  .kroky--tmave .krok { border-color: var(--c-line-on-ink); }
+  .krok__cislo { font-family: var(--font-display); font-size: var(--fs-sm); color: var(--c-muted); letter-spacing: 0.08em; }
+  .kroky--tmave .krok__cislo { color: var(--c-muted-on-ink); }
+  .krok__nazev { font-size: var(--fs-xl); }
+  .krok__text { color: var(--c-muted); }
+  .kroky--tmave .krok__text { color: var(--c-muted-on-ink); }
+</style>

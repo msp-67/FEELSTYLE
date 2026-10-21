@@ -1,0 +1,78 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Font } from 'astro:assets';
+import Seo from '../components/Seo.astro';
+import JsonLd from '../components/JsonLd.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { jazykZUrl, t } from '../i18n';
+import '../styles/global.css';
+
+interface Props {
+  titulek: string;
+  popis: string;
+  obrazek?: ImageMetadata;
+  obrazekAlt?: string;
+  bezSuffixu?: boolean;
+  noindex?: boolean;
+  typ?: 'website' | 'article';
+  /** Průhledná hlavička přes úvodní fotku. */
+  prekryv?: boolean;
+  /** Další uzly strukturovaných dat (BreadcrumbList, JobPosting…). */
+  jsonLd?: Record<string, unknown>[];
+}
+
+const { prekryv = false, jsonLd = [], ...seo } = Astro.props;
+const jazyk = jazykZUrl(Astro.url);
+const s = t(jazyk);
+---
+
+<!doctype html>
+<html lang={s.meta.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+    <script is:inline>document.documentElement.classList.add('js');</script>
+    <Font cssVariable="--font-urbanist" preload={[{ weight: 400 }]} />
+    <Font cssVariable="--font-inter" preload={[{ weight: 400 }]} />
+    <Seo {...seo} jazyk={jazyk} />
+    <link rel="icon" href="/favicon-svetly.png" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/favicon-tmavy.png" media="(prefers-color-scheme: dark)" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <JsonLd dalsi={jsonLd} />
+  </head>
+  <body>
+    <a href="#obsah" class="skip-link">{s.obecne.preskocitNaObsah}</a>
+    <Header jazyk={jazyk} prekryv={prekryv} />
+    <main id="obsah" tabindex="-1">
+      <slot />
+    </main>
+    <Footer jazyk={jazyk} />
+
+    <script>
+      // Jemné odhalování prvků při scrollu (respektuje prefers-reduced-motion přes tokeny).
+      const prvky = document.querySelectorAll<HTMLElement>('[data-reveal]');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (zaznamy) => {
+            for (const z of zaznamy) {
+              if (z.isIntersecting) {
+                z.target.classList.add('je-videt');
+                io.unobserve(z.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        prvky.forEach((el) => io.observe(el));
+      } else {
+        prvky.forEach((el) => el.classList.add('je-videt'));
+      }
+    </script>
+  </body>
+</html>
+
+<style>
+  main:focus { outline: none; }
+</style>

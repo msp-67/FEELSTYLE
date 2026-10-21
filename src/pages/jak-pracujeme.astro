@@ -1,0 +1,37 @@
+---
+import { getEntry, render } from 'astro:content';
+import Zaklad from '../layouts/Zaklad.astro';
+import ZahlaviStranky from '../components/ZahlaviStranky.astro';
+import Kroky from '../components/Kroky.astro';
+import Vyzva from '../components/Vyzva.astro';
+import { maObsah } from '../lib/text';
+
+const stranka = (await getEntry('stranky', 'jak-pracujeme'))!;
+const d = stranka.data;
+const { Content } = await render(stranka);
+// Kroky bez vyplněného názvu se nezobrazí; když nezůstane žádný, skryje se celá sekce.
+const kroky = (d.kroky ?? []).filter((k) => maObsah(k.nazev));
+---
+
+<Zaklad titulek={d.seoTitulek ?? d.titulek} popis={d.seoPopis}>
+  <ZahlaviStranky nadpis={d.titulek} stitek="Spolupráce s investorem" perex={d.perex} />
+  {maObsah(stranka.body) && (
+    <section class="container section section--tight-top">
+      <div class="prose text" data-reveal><Content /></div>
+    </section>
+  )}
+  {kroky.length > 0 && (
+    <section class="section section--mist" aria-labelledby="kroky-nadpis">
+      <div class="container">
+        <h2 id="kroky-nadpis" class="h-1 kroky-nadpis">Postup krok za krokem</h2>
+        <Kroky kroky={kroky} />
+      </div>
+    </section>
+  )}
+  <Vyzva />
+</Zaklad>
+
+<style>
+  .text { font-size: var(--fs-lg); }
+  .kroky-nadpis { margin-bottom: var(--space-8); }
+</style>

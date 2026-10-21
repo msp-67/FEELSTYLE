@@ -1,0 +1,145 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Zaklad from '../../layouts/Zaklad.astro';
+import Drobky from '../../components/Drobky.astro';
+import Parametry from '../../components/Parametry.astro';
+import Galerie from '../../components/Galerie.astro';
+import ProjektKarta from '../../components/ProjektKarta.astro';
+import Vyzva from '../../components/Vyzva.astro';
+import { dalsiProjekty, galerieProjektu, seoPopisProjektu, vsechnyProjekty, type Projekt } from '../../lib/projekty';
+import { web } from '../../config/web';
+import { maObsah } from '../../lib/text';
+import { t } from '../../i18n';
+
+export const getStaticPaths = (async () => {
+  const vse = await vsechnyProjekty();
+  return vse.map((projekt) => ({ params: { slug: projekt.id }, props: { projekt, vse } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  projekt: Projekt;
+  vse: Projekt[];
+}
+const { projekt, vse } = Astro.props;
+const d = projekt.data;
+const s = t('cs');
+const { Content } = await render(projekt);
+const fotky = galerieProjektu(projekt);
+const dalsi = dalsiProjekty(vse, projekt);
+const site = web.url;
+const maText = maObsah(projekt.body);
+
+const drobky = [
+  { nazev: s.obecne.domu, url: '/' },
+  { nazev: s.projekty.nadpis, url: '/projekty' },
+  { nazev: d.nazev },
+];
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: drobky.map((b, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: b.nazev,
+    item: `${site}${b.url ?? `/projekty/${projekt.id}`}`.replace(/\/$/, ''),
+  })),
+};
+---
+
+<Zaklad
+  titulek={d.seoTitulek ?? d.nazev}
+  popis={seoPopisProjektu(projekt)}
+  obrazek={d.hlavniFoto}
+  obrazekAlt={d.hlavniFotoAlt}
+  typ="article"
+  prekryv
+  jsonLd={[breadcrumbLd]}
+>
+  <article>
+    <header class="detail-hero">
+      <Image src={d.hlavniFoto} alt={d.hlavniFotoAlt} layout="full-width" priority class="detail-hero__foto" />
+      <div class="detail-hero__obsah container">
+        <p class="eyebrow detail-hero__stitek">{s.typy[d.typ]} · {d.lokalita}</p>
+        <h1 class="h-hero detail-hero__nadpis">{d.nazev}</h1>
+      </div>
+    </header>
+
+    <div class="container section">
+      <Drobky polozky={drobky} />
+      <div class:list={['detail', { 'detail--bez-textu': !maText }]}>
+        <aside class="detail__parametry" data-reveal>
+          <h2 class="eyebrow">{s.projekty.parametry}</h2>
+          <Parametry projekt={projekt} />
+        </aside>
+        {maText && (
+          <div class="prose detail__text" data-reveal>
+            <Content />
+          </div>
+        )}
+      </div>
+    </div>
+
+    {fotky.length > 0 && (
+      <div class="container section section--tight-top">
+        <Galerie fotky={fotky} nadpis={s.projekty.galerie} />
+      </div>
+    )}
+  </article>
+
+  {dalsi.length > 0 && (
+    <section class="section section--mist" aria-labelledby="dalsi-nadpis">
+      <div class="container">
+        <div class="dalsi-hlavicka" data-reveal>
+          <h2 id="dalsi-nadpis" class="h-1">{s.projekty.dalsi}</h2>
+          <a href="/projekty" class="odkaz-sipka">{s.projekty.vsechny} <span class="sipka" aria-hidden="true">→</span></a>
+        </div>
+        <ul role="list" class="dalsi-mrizka">
+          {dalsi.map((p, i) => <li><ProjektKarta projekt={p} index={i} /></li>)}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <Vyzva />
+</Zaklad>
+
+<style>
+  .detail-hero {
+    position: relative;
+    display: grid;
+    align-items: end;
+    min-height: min(92svh, 62rem);
+    color: var(--c-paper);
+    background: var(--c-ink);
+    overflow: hidden;
+  }
+  .detail-hero :global(.detail-hero__foto) { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .detail-hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgb(0 0 0 / 0.55), rgb(0 0 0 / 0) 50%, rgb(0 0 0 / 0.2));
+  }
+  .detail-hero__obsah { position: relative; z-index: 1; padding-block: var(--space-10) var(--space-8); }
+  .detail-hero__stitek { color: rgb(255 255 255 / 0.85); }
+  .detail-hero__nadpis { margin-top: var(--space-3); max-width: 16ch; }
+  @media (prefers-reduced-motion: no-preference) {
+    .detail-hero__obsah { animation: vstup 1.2s var(--ease-out) both; }
+  }
+  @keyframes vstup { from { opacity: 0; transform: translateY(20px); } }
+
+  .detail { display: grid; gap: var(--space-8); }
+  @media (min-width: 56em) {
+    .detail { grid-template-columns: minmax(16rem, 1fr) 2fr; gap: var(--space-9); }
+    .detail__parametry { position: sticky; top: calc(var(--header-h) + var(--space-5)); align-self: start; }
+    /* Bez textu o projektu jsou parametry jediným sloupcem – bez prázdného místa vedle. */
+    .detail--bez-textu { grid-template-columns: minmax(0, 36rem); }
+    .detail--bez-textu .detail__parametry { position: static; }
+  }
+  .detail__parametry .eyebrow { margin-bottom: var(--space-4); }
+  .detail__text { font-size: var(--fs-lg); line-height: 1.6; }
+
+  .dalsi-hlavicka { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: var(--space-5); margin-bottom: var(--space-8); }
+  .dalsi-mrizka { display: grid; gap: var(--space-8) var(--space-5); grid-template-columns: repeat(auto-fit, minmax(min(100%, 18rem), 1fr)); }
+</style>

@@ -1,0 +1,100 @@
+---
+import type { GetStaticPaths } from 'astro';
+import { Image } from 'astro:assets';
+import { render } from 'astro:content';
+import Zaklad from '../../layouts/Zaklad.astro';
+import ZahlaviStranky from '../../components/ZahlaviStranky.astro';
+import ProjektyMrizka from '../../components/ProjektyMrizka.astro';
+import Vyzva from '../../components/Vyzva.astro';
+import { vsechnyProjekty } from '../../lib/projekty';
+import { viditelneSluzby, type Sluzba } from '../../lib/sluzby';
+import { bezDoplnit, maObsah, zkrat } from '../../lib/text';
+import { web } from '../../config/web';
+
+export const getStaticPaths = (async () => {
+  const sluzby = await viditelneSluzby();
+  return sluzby.map((sluzba) => ({ params: { slug: sluzba.id }, props: { sluzba, ostatni: sluzby.filter((x) => x.id !== sluzba.id) } }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  sluzba: Sluzba;
+  ostatni: Sluzba[];
+}
+const { sluzba, ostatni } = Astro.props;
+const d = sluzba.data;
+const { Content } = await render(sluzba);
+const projekty = (await vsechnyProjekty()).filter((p) => d.typyProjektu.includes(p.data.typ));
+const popis = bezDoplnit(d.seoPopis) ?? bezDoplnit(d.perex) ?? `${d.nazev} – Feel Style s.r.o.`;
+
+const drobky = [
+  { nazev: 'Domů', url: '/' },
+  { nazev: 'Služby', url: '/sluzby' },
+  { nazev: d.nazev },
+];
+const breadcrumbLd = {
+  '@type': 'BreadcrumbList',
+  itemListElement: drobky.map((b, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: b.nazev,
+    item: `${web.url}${b.url ?? `/sluzby/${sluzba.id}`}`.replace(/\/$/, ''),
+  })),
+};
+---
+
+<Zaklad titulek={d.seoTitulek ?? d.nazev} popis={zkrat(popis)} obrazek={d.obrazek} obrazekAlt={d.obrazekAlt} jsonLd={[breadcrumbLd]}>
+  <ZahlaviStranky nadpis={d.nazev} stitek="Služby" drobky={drobky} />
+
+  {d.obrazek && (
+    <div class="container sirka-foto" data-reveal>
+      <Image src={d.obrazek} alt={d.obrazekAlt ?? ''} widths={[640, 960, 1440, 1920]} sizes="(min-width: 90em) 1440px, 100vw" layout="none" />
+    </div>
+  )}
+
+  {maObsah(sluzba.body) && (
+    <section class="container section">
+      <div class="prose text" data-reveal><Content /></div>
+    </section>
+  )}
+
+  {projekty.length > 0 && (
+    <section class="container section section--tight-top" aria-labelledby="realizace-nadpis">
+      <h2 id="realizace-nadpis" class="h-1 realizace-nadpis">Realizace</h2>
+      <ProjektyMrizka projekty={projekty} filtr={false} />
+    </section>
+  )}
+
+  {ostatni.length > 0 && (
+    <section class="section section--mist" aria-labelledby="ostatni-nadpis">
+      <div class="container">
+        <h2 id="ostatni-nadpis" class="eyebrow">Další služby</h2>
+        <ul role="list" class="ostatni">
+          {ostatni.map((x) => (
+            <li><a href={`/sluzby/${x.id}`}>{x.data.nazev} <span aria-hidden="true">→</span></a></li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  )}
+
+  <Vyzva />
+</Zaklad>
+
+<style>
+  .sirka-foto :global(img) { width: 100%; aspect-ratio: 21 / 9; object-fit: cover; }
+  @media (max-width: 40em) { .sirka-foto :global(img) { aspect-ratio: 4 / 3; } }
+  .text { font-size: var(--fs-lg); }
+  .realizace-nadpis { margin-bottom: var(--space-8); }
+  .ostatni { margin-top: var(--space-5); border-top: 1px solid var(--c-line); }
+  .ostatni a {
+    display: flex;
+    justify-content: space-between;
+    padding-block: var(--space-5);
+    border-bottom: 1px solid var(--c-line);
+    font-family: var(--font-display);
+    font-size: var(--fs-xl);
+    text-decoration: none;
+  }
+  .ostatni a span { transition: transform var(--dur-fast) var(--ease-out); }
+  .ostatni a:hover span { transform: translateX(6px); }
+</style>

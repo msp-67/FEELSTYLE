@@ -1,0 +1,60 @@
+---
+import { Image } from 'astro:assets';
+import { getEntry } from 'astro:content';
+import Zaklad from '../layouts/Zaklad.astro';
+import ZahlaviStranky from '../components/ZahlaviStranky.astro';
+import Cisla from '../components/Cisla.astro';
+import Vyzva from '../components/Vyzva.astro';
+import T from '../components/T.astro';
+import { firma } from '../config/firma';
+import { maObsah, odstavce } from '../lib/text';
+import { t } from '../i18n';
+
+const stranka = (await getEntry('stranky', 'o-nas'))!;
+const d = stranka.data;
+const s = t('cs');
+---
+
+<Zaklad titulek={d.seoTitulek ?? d.titulek} popis={d.seoPopis} obrazek={d.obrazek} obrazekAlt={d.obrazekAlt}>
+  <ZahlaviStranky nadpis={d.titulek} stitek="Feel Style s.r.o." perex={d.perex} />
+
+  {d.obrazek && (
+    <div class="container" data-reveal>
+      <Image src={d.obrazek} alt={d.obrazekAlt ?? ''} widths={[640, 960, 1440, 1920]} sizes="(min-width: 90em) 1440px, 100vw" layout="none" class="velka-foto" priority />
+    </div>
+  )}
+
+  <section class="container section" aria-label="Klíčová čísla">
+    <Cisla />
+  </section>
+
+  {d.sekce?.filter((sekce) => maObsah(sekce.text)).map((sekce, i) => (
+    <section class:list={['section', { 'section--mist': i % 2 === 1 }]} aria-labelledby={`sekce-${i}`}>
+      <div class="container sekce">
+        <h2 id={`sekce-${i}`} class="h-1 sekce__nadpis" data-reveal>{sekce.nadpis}</h2>
+        <div class="sekce__text prose" data-reveal>
+          {odstavce(sekce.text).filter(maObsah).map((p) => <T as="p" text={p} />)}
+          {sekce.nadpis === 'Zahraniční zkušenosti' && (
+            <ul role="list" class="zeme">
+              {firma.zeme.map((z) => <li>{s.zeme[z]}</li>)}
+            </ul>
+          )}
+        </div>
+      </div>
+    </section>
+  ))}
+
+  <Vyzva />
+</Zaklad>
+
+<style>
+  .velka-foto { width: 100%; aspect-ratio: 16 / 9; object-fit: cover; }
+  @media (max-width: 40em) { .velka-foto { aspect-ratio: 4 / 3; } }
+  .sekce { display: grid; gap: var(--space-6); }
+  @media (min-width: 56em) {
+    .sekce { grid-template-columns: 1fr 2fr; gap: var(--space-9); }
+  }
+  .sekce__text { font-size: var(--fs-lg); }
+  .zeme { display: flex; flex-wrap: wrap; gap: var(--space-2); padding: 0; }
+  .zeme li { margin: 0; padding: 0.4rem 0.9rem; border: 1px solid var(--c-line); font-size: var(--fs-sm); }
+</style>

@@ -1,0 +1,78 @@
+---
+import { getCollection, getEntry, render } from 'astro:content';
+import Zaklad from '../../layouts/Zaklad.astro';
+import ZahlaviStranky from '../../components/ZahlaviStranky.astro';
+import PoslatCV from '../../components/PoslatCV.astro';
+import { maObsah } from '../../lib/text';
+import { t } from '../../i18n';
+
+const s = t('cs').kariera;
+const stranka = (await getEntry('stranky', 'kariera'))!;
+const d = stranka.data;
+const { Content } = await render(stranka);
+const pozice = (await getCollection('pozice'))
+  .filter((p) => p.data.aktivni)
+  .sort((a, b) => b.data.zverejneno.getTime() - a.data.zverejneno.getTime());
+---
+
+<Zaklad titulek={d.seoTitulek ?? d.titulek} popis={d.seoPopis}>
+  <ZahlaviStranky nadpis={d.titulek} stitek="Feel Style s.r.o." perex={d.perex} />
+
+  {maObsah(stranka.body) && (
+    <section class="container section section--tight-top">
+      <div class="prose text" data-reveal><Content /></div>
+    </section>
+  )}
+
+  <section class="section section--mist" aria-labelledby="pozice-nadpis">
+    <div class="container">
+      <h2 id="pozice-nadpis" class="h-1 nadpis">{s.otevrenePozice}</h2>
+      {pozice.length > 0 ? (
+        <>
+          <ul role="list" class="pozice">
+            {pozice.map((p) => (
+              <li data-reveal>
+                <a href={`/kariera/${p.id}`} class="pozice__odkaz">
+                  <span class="pozice__nazev">{p.data.nazev}</span>
+                  <span class="pozice__meta">{p.data.lokalita} · {p.data.uvazek}</span>
+                  <span class="pozice__perex">{p.data.perex}</span>
+                  <span class="pozice__sipka" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <div class="cv">
+            <p>{s.poslatCV}</p>
+            <PoslatCV />
+          </div>
+        </>
+      ) : (
+        <div class="prazdne" data-reveal>
+          <p class="lead">{s.zadnePozice}</p>
+          <p class="muted">{s.poslatCV}</p>
+          <PoslatCV />
+        </div>
+      )}
+    </div>
+  </section>
+</Zaklad>
+
+<style>
+  .text { font-size: var(--fs-lg); }
+  .nadpis { margin-bottom: var(--space-8); }
+  .pozice { border-top: 1px solid var(--c-ink); }
+  .pozice__odkaz {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2) var(--space-5);
+    padding-block: var(--space-6);
+    border-bottom: 1px solid var(--c-line);
+    text-decoration: none;
+  }
+  .pozice__nazev { font-family: var(--font-display); font-size: var(--fs-xl); }
+  .pozice__meta { grid-column: 1; font-size: var(--fs-sm); color: var(--c-muted); }
+  .pozice__perex { grid-column: 1; color: var(--c-ink-soft); }
+  .pozice__sipka { grid-column: 2; grid-row: 1 / span 3; align-self: center; font-size: var(--fs-xl); transition: transform var(--dur-fast) var(--ease-out); }
+  .pozice__odkaz:hover .pozice__sipka { transform: translateX(6px); }
+  .cv, .prazdne { display: grid; gap: var(--space-5); justify-items: start; margin-top: var(--space-8); max-width: 48ch; }
+</style>

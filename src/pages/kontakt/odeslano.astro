@@ -1,0 +1,17 @@
+---
+// Děkovná stránka po odeslání formuláře bez JavaScriptu. Není v sitemapě a neindexuje se.
+import Zaklad from '../../layouts/Zaklad.astro';
+import ZahlaviStranky from '../../components/ZahlaviStranky.astro';
+import { t } from '../../i18n';
+const s = t('cs').formular;
+---
+
+<Zaklad titulek="Zpráva odeslána" popis={s.uspech} noindex>
+  <ZahlaviStranky nadpis="Děkujeme" perex={s.uspech}>
+    <p class="zpet"><a href="/" class="odkaz-sipka">Zpět na úvod <span class="sipka" aria-hidden="true">→</span></a></p>
+  </ZahlaviStranky>
+</Zaklad>
+
+<style>
+  .zpet { margin-top: var(--space-7); }
+</style>

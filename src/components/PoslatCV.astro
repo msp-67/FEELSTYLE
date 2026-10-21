@@ -1,0 +1,33 @@
+---
+/**
+ * Tlačítko „Poslat životopis“ (mailto). Dokud není vyplněný e-mail pro CV, zobrazí se placeholder,
+ * nebo – při skrytých placeholderech – odkaz na kontaktní formulář.
+ */
+import { firma } from '../config/firma';
+import { zobrazitPlaceholdery } from '../config/placeholdery';
+import { jeDoplnit } from '../lib/text';
+import { t } from '../i18n';
+import T from './T.astro';
+
+interface Props {
+  text?: string;
+  predmet?: string;
+}
+const s = t('cs').kariera;
+const { text = s.tlacitkoCV, predmet = 'Životopis' } = Astro.props;
+const email = firma.emaily.kariera;
+---
+
+{jeDoplnit(email) ? (
+  zobrazitPlaceholdery ? (
+    <T text={email} />
+  ) : (
+    <a class="btn" href="/kontakt">
+      {s.formularCV} <span class="sipka" aria-hidden="true">→</span>
+    </a>
+  )
+) : (
+  <a class="btn" href={`mailto:${email}?subject=${encodeURIComponent(predmet)}`}>
+    {text} <span class="sipka" aria-hidden="true">→</span>
+  </a>
+)}

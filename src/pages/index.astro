@@ -1,0 +1,126 @@
+---
+import { getEntry } from 'astro:content';
+import Zaklad from '../layouts/Zaklad.astro';
+import Hero from '../components/Hero.astro';
+import Cisla from '../components/Cisla.astro';
+import SluzbaKarta from '../components/SluzbaKarta.astro';
+import ProjektKarta from '../components/ProjektKarta.astro';
+import Kroky from '../components/Kroky.astro';
+import Vyzva from '../components/Vyzva.astro';
+import { vsechnyProjekty } from '../lib/projekty';
+import { sloupceSluzeb, viditelneSluzby } from '../lib/sluzby';
+import { maObsah } from '../lib/text';
+import { web } from '../config/web';
+import { t } from '../i18n';
+
+const s = t('cs');
+const projekty = (await vsechnyProjekty()).filter((p) => p.data.featured).slice(0, 6);
+const sluzby = (await viditelneSluzby()).filter((x) => x.data.naUvodni);
+const postup = await getEntry('stranky', 'jak-pracujeme');
+// Kroky bez vyplněného názvu se nezobrazí; když nezůstane žádný, skryje se celá sekce.
+const kroky = (postup?.data.kroky ?? []).filter((k) => maObsah(k.nazev));
+---
+
+<Zaklad
+  titulek="Feel Style – stavební firma | vily, rodinné domy, renovace"
+  popis={web.popis}
+  obrazekAlt={web.hero.fotoAlt}
+  bezSuffixu
+  prekryv
+>
+  <Hero
+    odkazy={[
+      { text: 'Prozkoumejte naše stavby', url: '/projekty' },
+      { text: 'O nás', url: '/o-nas', styl: 'ghost' },
+    ]}
+  />
+
+  <section class="section" aria-labelledby="uvod-nadpis">
+    <div class="container uvod">
+      <div data-reveal>
+        <p class="eyebrow">Feel Style s.r.o.</p>
+        <h2 id="uvod-nadpis" class="h-2 uvod__nadpis">
+          Stavíme výhradně pro přímé investory – od rezidenčních vil a bytových domů až po komerční a průmyslové objekty.
+        </h2>
+      </div>
+      <Cisla />
+    </div>
+  </section>
+
+  <section class="section section--mist" aria-labelledby="sluzby-nadpis">
+    <div class="container">
+      <div class="hlavicka-sekce" data-reveal>
+        <div>
+          <p class="eyebrow">Služby</p>
+          <h2 id="sluzby-nadpis" class="h-1">Naše služby</h2>
+        </div>
+        <a href="/sluzby" class="odkaz-sipka">Všechny služby <span class="sipka" aria-hidden="true">→</span></a>
+      </div>
+      <div class="mrizka-sluzeb sluzby-mrizka" style={sloupceSluzeb(sluzby.length)}>
+        {sluzby.map((x, i) => <SluzbaKarta sluzba={x} index={i} />)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section" aria-labelledby="projekty-nadpis">
+    <div class="container">
+      <div class="hlavicka-sekce" data-reveal>
+        <div>
+          <p class="eyebrow">{s.projekty.nadpis}</p>
+          <h2 id="projekty-nadpis" class="h-1">{s.projekty.vybrane}</h2>
+        </div>
+        <a href="/projekty" class="odkaz-sipka">{s.projekty.vsechny} <span class="sipka" aria-hidden="true">→</span></a>
+      </div>
+      <ul role="list" class="vybrane">
+        {projekty.map((p, i) => (
+          <li class:list={{ 'vybrane--velka': i === 0 && projekty.length % 2 === 1 }}>
+            <ProjektKarta
+              projekt={p}
+              index={i}
+              sizes={i === 0 && projekty.length % 2 === 1 ? '100vw' : '(min-width: 48em) 50vw, 100vw'}
+            />
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  {kroky.length > 0 && (
+    <section class="section section--ink" aria-labelledby="postup-nadpis">
+      <div class="container">
+        <div class="hlavicka-sekce" data-reveal>
+          <div>
+            <p class="eyebrow">Spolupráce</p>
+            <h2 id="postup-nadpis" class="h-1">Jak pracujeme</h2>
+          </div>
+          <a href="/jak-pracujeme" class="odkaz-sipka">Celý postup <span class="sipka" aria-hidden="true">→</span></a>
+        </div>
+        <Kroky kroky={kroky} tmave />
+      </div>
+    </section>
+  )}
+
+  <Vyzva />
+</Zaklad>
+
+<style>
+  .uvod { display: grid; gap: var(--space-8); }
+  .uvod__nadpis { margin-top: var(--space-4); max-width: 30ch; font-weight: var(--fw-regular); }
+  .hlavicka-sekce {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: end;
+    justify-content: space-between;
+    gap: var(--space-5);
+    margin-bottom: var(--space-8);
+  }
+  .hlavicka-sekce .h-1 { margin-top: var(--space-3); }
+  .sluzby-mrizka { gap: var(--space-7) var(--space-5); }
+  /* Vybrané projekty: 2 velké sloupce; při lichém počtu je první projekt přes celou šířku. */
+  .vybrane { display: grid; gap: var(--space-8) var(--space-5); }
+  @media (min-width: 48em) {
+    .vybrane { grid-template-columns: repeat(2, 1fr); }
+    .vybrane--velka { grid-column: 1 / -1; }
+    .vybrane--velka :global(.karta__foto) { aspect-ratio: 21 / 9; }
+  }
+</style>

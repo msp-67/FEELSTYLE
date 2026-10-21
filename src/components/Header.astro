@@ -1,0 +1,208 @@
+---
+import { navigace } from '../config/navigace';
+import { cesta, t, type Jazyk } from '../i18n';
+
+interface Props {
+  jazyk: Jazyk;
+  /** Průhledná hlavička přes fotku (úvodní stránka, detail projektu). */
+  prekryv?: boolean;
+}
+const { jazyk, prekryv = false } = Astro.props;
+const nav = navigace[jazyk];
+const s = t(jazyk);
+const aktualni = Astro.url.pathname.replace(/\.html$/, '');
+const jeAktivni = (url: string) => (url === '/' ? aktualni === '/' : aktualni === url || aktualni.startsWith(url + '/'));
+---
+
+<header class="hlavicka" data-prekryv={prekryv ? '' : undefined} data-hlavicka>
+  <div class="container hlavicka__radek">
+    <a href={cesta('/', jazyk)} class="logo" aria-label={`FEEL STYLE – ${s.obecne.domu}`}>FEEL STYLE</a>
+
+    <nav class="nav" aria-label={s.obecne.hlavniNavigace}>
+      <ul role="list" class="nav__seznam">
+        {nav.hlavni.map((o) => (
+          <li>
+            <a href={cesta(o.url, jazyk)} class="nav__odkaz" aria-current={jeAktivni(o.url) ? 'page' : undefined}>
+              {o.nazev}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a href={cesta(nav.vyzva.url, jazyk)} class="nav__vyzva" aria-current={jeAktivni(nav.vyzva.url) ? 'page' : undefined}>
+        {nav.vyzva.nazev}
+      </a>
+    </nav>
+
+    <button class="menu-tlacitko" type="button" aria-expanded="false" aria-controls="mobilni-menu" data-menu-tlacitko>
+      <span class="menu-tlacitko__text" data-otevrit>{s.obecne.menu}</span>
+      <span class="menu-tlacitko__text" data-zavrit hidden>{s.obecne.zavritMenu}</span>
+      <span class="menu-tlacitko__ikona" aria-hidden="true"><span></span><span></span></span>
+    </button>
+  </div>
+
+  <div id="mobilni-menu" class="mobilni-menu" hidden data-menu>
+    <nav class="container" aria-label={s.obecne.hlavniNavigace}>
+      <ul role="list">
+        {[...nav.hlavni, nav.vyzva].map((o) => (
+          <li>
+            <a href={cesta(o.url, jazyk)} aria-current={jeAktivni(o.url) ? 'page' : undefined}>{o.nazev}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .hlavicka {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    background: var(--c-paper);
+    color: var(--c-ink);
+    border-bottom: 1px solid transparent;
+    transition: background-color var(--dur-base) var(--ease-out), color var(--dur-base) var(--ease-out),
+      border-color var(--dur-base);
+  }
+  .hlavicka[data-odscrollovano] { border-bottom-color: var(--c-line); }
+  .hlavicka[data-prekryv] {
+    position: fixed;
+    inset: 0 0 auto;
+    background: transparent;
+    color: var(--c-paper);
+  }
+  .hlavicka[data-prekryv]::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 -40%;
+    background: linear-gradient(to bottom, rgb(0 0 0 / 0.45), transparent);
+    pointer-events: none;
+    transition: opacity var(--dur-base);
+  }
+  .hlavicka[data-prekryv][data-odscrollovano] {
+    background: var(--c-paper);
+    color: var(--c-ink);
+    border-bottom-color: var(--c-line);
+  }
+  .hlavicka[data-prekryv][data-odscrollovano]::before { opacity: 0; }
+  .hlavicka[data-menu-otevreno] { background: var(--c-ink) !important; color: var(--c-paper) !important; }
+
+  .hlavicka__radek {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-6);
+    height: var(--header-h);
+  }
+  .logo {
+    font-family: var(--font-display);
+    font-weight: var(--fw-semibold);
+    font-size: 1.125rem;
+    letter-spacing: 0.22em;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .nav { display: none; align-items: center; gap: var(--space-7); }
+  .nav__seznam { display: flex; gap: var(--space-6); }
+  .nav__odkaz, .nav__vyzva {
+    position: relative;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    padding-block: var(--space-2);
+  }
+  .nav__odkaz::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--dur-base) var(--ease-out);
+  }
+  .nav__odkaz:hover::after, .nav__odkaz[aria-current]::after { transform: scaleX(1); transform-origin: left; }
+  .nav__vyzva {
+    padding: 0.6rem 1.2rem;
+    border: 1px solid currentColor;
+    transition: background-color var(--dur-fast), color var(--dur-fast);
+  }
+  .nav__vyzva:hover { background: var(--c-ink); color: var(--c-paper); border-color: var(--c-ink); }
+  .hlavicka[data-prekryv]:not([data-odscrollovano]) .nav__vyzva:hover { background: var(--c-paper); color: var(--c-ink); border-color: var(--c-paper); }
+
+  .menu-tlacitko {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+    font-size: var(--fs-sm);
+    font-weight: var(--fw-medium);
+    letter-spacing: 0.04em;
+  }
+  .menu-tlacitko__ikona { display: grid; gap: 6px; width: 22px; }
+  .menu-tlacitko__ikona span { display: block; height: 1.5px; background: currentColor; transition: transform var(--dur-base) var(--ease-out); }
+  .menu-tlacitko[aria-expanded='true'] .menu-tlacitko__ikona span:first-child { transform: translateY(3.75px) rotate(45deg); }
+  .menu-tlacitko[aria-expanded='true'] .menu-tlacitko__ikona span:last-child { transform: translateY(-3.75px) rotate(-45deg); }
+
+  .mobilni-menu {
+    position: fixed;
+    inset: var(--header-h) 0 0;
+    z-index: var(--z-menu);
+    background: var(--c-ink);
+    color: var(--c-paper);
+    overflow-y: auto;
+    padding-block: var(--space-7);
+  }
+  .mobilni-menu ul { display: grid; gap: var(--space-2); }
+  .mobilni-menu a {
+    display: block;
+    padding-block: var(--space-2);
+    font-family: var(--font-display);
+    font-size: var(--fs-2xl);
+    text-decoration: none;
+  }
+  .mobilni-menu a[aria-current] { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+
+  @media (min-width: 64em) {
+    .nav { display: flex; }
+    .menu-tlacitko { display: none; }
+    .mobilni-menu { display: none !important; }
+  }
+</style>
+
+<script>
+  const hlavicka = document.querySelector<HTMLElement>('[data-hlavicka]');
+  const tlacitko = document.querySelector<HTMLButtonElement>('[data-menu-tlacitko]');
+  const menu = document.querySelector<HTMLElement>('[data-menu]');
+
+  if (hlavicka) {
+    const aktualizuj = () => hlavicka.toggleAttribute('data-odscrollovano', window.scrollY > 24);
+    aktualizuj();
+    window.addEventListener('scroll', aktualizuj, { passive: true });
+  }
+
+  if (hlavicka && tlacitko && menu) {
+    const okoli = () => document.querySelectorAll<HTMLElement>('main, footer');
+    const prepni = (otevrit: boolean) => {
+      tlacitko.setAttribute('aria-expanded', String(otevrit));
+      tlacitko.querySelector('[data-otevrit]')?.toggleAttribute('hidden', otevrit);
+      tlacitko.querySelector('[data-zavrit]')?.toggleAttribute('hidden', !otevrit);
+      menu.hidden = !otevrit;
+      hlavicka.toggleAttribute('data-menu-otevreno', otevrit);
+      document.documentElement.style.overflow = otevrit ? 'hidden' : '';
+      okoli().forEach((el) => (el.inert = otevrit));
+      if (otevrit) menu.querySelector('a')?.focus();
+    };
+    tlacitko.addEventListener('click', () => prepni(tlacitko.getAttribute('aria-expanded') !== 'true'));
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) {
+        prepni(false);
+        tlacitko.focus();
+      }
+    });
+    window.matchMedia('(min-width: 64em)').addEventListener('change', (e) => e.matches && prepni(false));
+  }
+</script>
